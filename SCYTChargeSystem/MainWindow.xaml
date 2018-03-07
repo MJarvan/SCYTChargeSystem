@@ -5,13 +5,112 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SCYTChargeSystem"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="400" Width="1000" MinHeight="400" MinWidth="1000">
     <Grid>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="*"></RowDefinition>
-			<RowDefinition Height="3*"></RowDefinition>
-		</Grid.RowDefinitions>
-		<Grid Grid.Row="0"></Grid>
-		<DataGrid Grid.Row="1" Name="datagrid"></DataGrid>
-    </Grid>
+		<TabControl x:Name="tabControl" DockPanel.Dock="Top" Height="350" VerticalAlignment="Top" TabStripPlacement="Left">
+			<TabItem Header="主页">
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="2*"></RowDefinition>
+						<RowDefinition Height="*"></RowDefinition>
+						<RowDefinition Height="3*"></RowDefinition>
+					</Grid.RowDefinitions>
+					<!--主页第一列(总览营业额和券)-->
+					<Grid Grid.Row="0">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"></ColumnDefinition>
+							<ColumnDefinition Width="*"></ColumnDefinition>
+							<ColumnDefinition Width="*"></ColumnDefinition>
+							<ColumnDefinition Width="*"></ColumnDefinition>
+						</Grid.ColumnDefinitions>
+						<!--今天营业额-->
+						<Border Grid.Column="0" Margin="5" BorderThickness="3" BorderBrush="Black" CornerRadius="10">
+							<Grid>
+								<WrapPanel Margin="20" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
+									<TextBlock FontSize="30" Name="TotalMoneyTextblock" HorizontalAlignment="Left">100000</TextBlock>
+									<TextBlock Margin="10,10,0,0" FontSize="20" HorizontalAlignment="Right">元</TextBlock>
+								</WrapPanel>
+								<TextBlock Margin="10" FontSize="15" VerticalAlignment="Bottom" HorizontalAlignment="Center">今天营业额</TextBlock>
+							</Grid>
+						</Border>
+						<!--今天发券数-->
+						<Border Grid.Column="1" Margin="5" BorderThickness="3" BorderBrush="Black" CornerRadius="10">
+							<Grid>
+								<WrapPanel Margin="20" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
+									<TextBlock FontSize="30" Name="TotalSendNumTextblock" HorizontalAlignment="Left">20</TextBlock>
+									<TextBlock Margin="10,10,0,0" FontSize="20" HorizontalAlignment="Right">张</TextBlock>
+								</WrapPanel>
+								<TextBlock Margin="10" FontSize="15" VerticalAlignment="Bottom" HorizontalAlignment="Center">今天发券数</TextBlock>
+							</Grid>
+						</Border>
+						<!--今天剩余可兑换数-->
+						<Border Grid.Column="2" Margin="5" BorderThickness="3" BorderBrush="Black" CornerRadius="10">
+							<Grid>
+								<WrapPanel Margin="20" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
+									<TextBlock FontSize="30" Name="RemainNumTextblock" HorizontalAlignment="Left">10</TextBlock>
+									<TextBlock Margin="10,10,0,0" FontSize="20" HorizontalAlignment="Right">张</TextBlock>
+								</WrapPanel>
+								<TextBlock Margin="10" FontSize="15" VerticalAlignment="Bottom" HorizontalAlignment="Center">今天剩余可兑换数</TextBlock>
+							</Grid>
+						</Border>
+						<!--今天已兑换数-->
+						<Border Grid.Column="3" Margin="5" BorderThickness="3" BorderBrush="Black" CornerRadius="10">
+							<Grid>
+								<WrapPanel Margin="20" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
+									<TextBlock FontSize="30" Name="SendNumTextblock" HorizontalAlignment="Left">10</TextBlock>
+									<TextBlock Margin="10,10,0,0" FontSize="20" HorizontalAlignment="Right">张</TextBlock>
+								</WrapPanel>
+								<TextBlock Margin="10" FontSize="15" VerticalAlignment="Bottom" HorizontalAlignment="Center">今天已兑换数</TextBlock>
+							</Grid>
+						</Border>
+					</Grid>
+					<!--主页第二列(兑换券添加信息)-->
+					<WrapPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
+						<WrapPanel Orientation="Horizontal" Margin="5">
+							<TextBlock Margin="5">兑换券开始编号</TextBlock>
+							<TextBox Width="100" Name="MainAddTicketNoTextbox"></TextBox>
+						</WrapPanel>
+						<WrapPanel Orientation="Horizontal" Margin="5">
+							<TextBlock Margin="5">手机号</TextBlock>
+							<TextBox Width="100" Name="MainAddPhoneNumberTextbox"></TextBox>
+						</WrapPanel>
+						<WrapPanel Orientation="Horizontal" Margin="5">
+							<TextBlock Margin="5" Foreground="Red">消费金额</TextBlock>
+							<TextBox Width="100" Name="MainAddMoneyTextbox"></TextBox>
+						</WrapPanel>
+						<Button Width="50" Margin="5">添加</Button>
+					</WrapPanel>
+					<!--主页第三列(兑换券详细信息)-->
+					<DataGrid Grid.Row="2" Name="MainAddDatagrid"></DataGrid>
+				</Grid>
+			</TabItem>
+			<TabItem Header="兑换券管理">
+
+			</TabItem>
+			<TabItem Header="营业额管理">
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="*"></RowDefinition>
+						<RowDefinition Height="3*"></RowDefinition>
+					</Grid.RowDefinitions>
+					<!--营业额管理第一列(查询条件)-->
+					<WrapPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left">
+						<WrapPanel Orientation="Horizontal" Margin="5">
+							<TextBlock Margin="5">请选择开始时间</TextBlock>
+							<DatePicker Width="100" Name="QueryStartDatepicker"></DatePicker>
+						</WrapPanel>
+						<WrapPanel Orientation="Horizontal" Margin="5">
+							<TextBlock Margin="5">请选择结束时间</TextBlock>
+							<DatePicker Width="100" Name="QueryEndDatepicker"></DatePicker>
+						</WrapPanel>
+					</WrapPanel>
+					<!--营业额管理第二列(数据显示)-->
+					<DataGrid Grid.Row="1" Name="QueryDatagrid"></DataGrid>
+				</Grid>
+			</TabItem>
+			<TabItem Header="公式管理">
+
+			</TabItem>
+		</TabControl>
+	</Grid>
 </Window>

@@ -13,5 +13,13 @@ namespace SCYTChargeSystem
 	/// </summary>
 	public partial class App:Application
 	{
+		protected override void OnStartup(StartupEventArgs e)
+		{
+			List<string> list = e.Args.ToList();
+			LoginWindow login = new LoginWindow();
+			login.Loginmessage = list;
+			MainWindow main = new MainWindow();
+			main.Show();
+		}
 	}
 }
