@@ -19,7 +19,8 @@ namespace SCYTChargeSystem
 			LoginWindow login = new LoginWindow();
 			login.Loginmessage = list;
 			MainWindow main = new MainWindow();
-			main.Show();
+			main.ShowDialog();
+			Shutdown();
 		}
 	}
 }

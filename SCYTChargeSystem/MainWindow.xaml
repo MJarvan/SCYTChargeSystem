@@ -5,15 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SCYTChargeSystem"
         mc:Ignorable="d"
-        Title="MainWindow" Height="400" Width="1000" MinHeight="400" MinWidth="1000">
+        Title="收费系统" Height="600" Width="1000" MinHeight="400" MinWidth="1000" Loaded="Window_Loaded">
     <Grid>
-		<TabControl x:Name="tabControl" DockPanel.Dock="Top" Height="350" VerticalAlignment="Top" TabStripPlacement="Left">
-			<TabItem Header="主页">
+		<TabControl x:Name="tabControl" DockPanel.Dock="Top" Height="550" VerticalAlignment="Top" TabStripPlacement="Left">
+			<TabItem Height="50" Header="主页">
 				<Grid>
 					<Grid.RowDefinitions>
-						<RowDefinition Height="2*"></RowDefinition>
-						<RowDefinition Height="*"></RowDefinition>
 						<RowDefinition Height="3*"></RowDefinition>
+						<RowDefinition Height="*"></RowDefinition>
+						<RowDefinition Height="*"></RowDefinition>
+						<RowDefinition Height="8*"></RowDefinition>
 					</Grid.RowDefinitions>
 					<!--主页第一列(总览营业额和券)-->
 					<Grid Grid.Row="0">
@@ -78,16 +79,69 @@
 							<TextBlock Margin="5" Foreground="Red">消费金额</TextBlock>
 							<TextBox Width="100" Name="MainAddMoneyTextbox"></TextBox>
 						</WrapPanel>
-						<Button Width="50" Margin="5">添加</Button>
+						<WrapPanel Orientation="Horizontal" Margin="5">
+							<TextBlock Margin="5">领券数量</TextBlock>
+							<TextBlock FontSize="20" Width="100" Name="MainReceiveTicketTextblock">10</TextBlock>
+						</WrapPanel>
+						<Button Width="50" Margin="5" Name="MainAddTicketButton">添加</Button>
+					</WrapPanel>
+					<WrapPanel Grid.Row="2" Orientation="Vertical" VerticalAlignment="Center">
+						<WrapPanel Orientation="Horizontal" Margin="5">
+							<Button Width="50" Margin="5" Name="MainConfirmTicketButton">领取</Button>
+							<Button Width="50" Margin="5" Name="MainDeleteTicketButton">过号</Button>
+						</WrapPanel>
 					</WrapPanel>
 					<!--主页第三列(兑换券详细信息)-->
-					<DataGrid Grid.Row="2" Name="MainAddDatagrid"></DataGrid>
+					<DataGrid Margin="5,0,0,0" Grid.Row="3" Name="MainTicketDatagrid"></DataGrid>
 				</Grid>
 			</TabItem>
-			<TabItem Header="兑换券管理">
-
+			<TabItem Height="50" Header="兑换券管理">
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="2*"></RowDefinition>
+						<RowDefinition Height="2*"></RowDefinition>
+						<RowDefinition Height="*"></RowDefinition>
+						<RowDefinition Height="8*"></RowDefinition>
+					</Grid.RowDefinitions>
+					<!--兑换券管理第一列(兑换券添加信息)-->
+					<WrapPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+						<WrapPanel Orientation="Horizontal" Margin="5">
+							<TextBlock Margin="5">兑换券开始编号</TextBlock>
+							<TextBox Width="100" Name="ManageAddTicketNoTextbox"></TextBox>
+						</WrapPanel>
+						<WrapPanel Orientation="Horizontal" Margin="5">
+							<TextBlock Margin="5">手机号</TextBlock>
+							<TextBox Width="100" Name="ManageAddPhoneNumberTextbox"></TextBox>
+						</WrapPanel>
+						<WrapPanel Orientation="Horizontal" Margin="5">
+							<TextBlock Margin="5" Foreground="Red">消费金额</TextBlock>
+							<TextBox Width="100" Name="ManageAddMoneyTextbox"></TextBox>
+						</WrapPanel>
+						<WrapPanel Orientation="Horizontal" Margin="5">
+							<TextBlock Margin="5">领券数量</TextBlock>
+							<TextBlock FontSize="20" Width="100" Name="ManageReceiveTicketTextblock">10</TextBlock>
+						</WrapPanel>
+						<Button Width="50" Margin="5" Name="ManageAddTicketButton">添加</Button>
+					</WrapPanel>
+					<!--兑换券管理第二列(查询兑换券)-->
+					<WrapPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Center">
+						<WrapPanel Orientation="Horizontal" Margin="5">
+							<ComboBox Width="100" Margin="5" Name="QueryTicketCombobox"></ComboBox>
+							<DatePicker Width="100" Margin="5" Name="QueryTicketDatepicker"></DatePicker>
+							<TextBox Width="100" Margin="5" Name="QueryTicketNoTextbox"></TextBox>
+							<Button Width="50" Margin="5" Name="QueryTicketButton">查询</Button>
+						</WrapPanel>
+					</WrapPanel>
+					<WrapPanel Grid.Row="2" Orientation="Vertical" VerticalAlignment="Center">
+						<WrapPanel Orientation="Horizontal" Margin="5">
+							<Button Width="50" Margin="5" Name="ManageConfirmTicketButton">领取</Button>
+							<Button Width="50" Margin="5" Name="ManageDeleteTicketButton">过号</Button>
+						</WrapPanel>
+					</WrapPanel>
+					<DataGrid Margin="10,0,0,0" Grid.Row="3" Name="ManageTicketDatagrid"></DataGrid>
+				</Grid>
 			</TabItem>
-			<TabItem Header="营业额管理">
+			<TabItem Height="50" Header="营业额管理">
 				<Grid>
 					<Grid.RowDefinitions>
 						<RowDefinition Height="*"></RowDefinition>
@@ -103,13 +157,56 @@
 							<TextBlock Margin="5">请选择结束时间</TextBlock>
 							<DatePicker Width="100" Name="QueryEndDatepicker"></DatePicker>
 						</WrapPanel>
+						<Button Width="50" Margin="5" Name="QueryMoneyButton">查询</Button>
 					</WrapPanel>
 					<!--营业额管理第二列(数据显示)-->
 					<DataGrid Grid.Row="1" Name="QueryDatagrid"></DataGrid>
 				</Grid>
 			</TabItem>
-			<TabItem Header="公式管理">
+			<TabItem Height="50" Header="公式管理">
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="2*"></RowDefinition>
+						<RowDefinition Height="3*"></RowDefinition>
+						<RowDefinition Height="3*"></RowDefinition>
+					</Grid.RowDefinitions>
+					<!--公式管理第一列(领取兑换券逻辑)-->
+					<WrapPanel Grid.Row="0" Orientation="Vertical">
+						<TextBlock Margin="30" FontSize="30">领取兑换券逻辑</TextBlock>
+						<WrapPanel Margin="60,0,0,0"  Orientation="Horizontal" VerticalAlignment="Center">
+							<TextBlock Margin="5" VerticalAlignment="Center">每消费满</TextBlock>
+							<TextBox Margin="5" Width="50" Name="LogicCostMoneyTextbox" VerticalAlignment="Center"></TextBox>
+							<TextBlock Margin="5" VerticalAlignment="Center">元，且登记电话信息的客户可拿1张兑换券。</TextBlock>
+						</WrapPanel>
+					</WrapPanel>
+					<!--公式管理第二列(现金兑换公式)-->
+					<WrapPanel Grid.Row="1" Orientation="Vertical">
+						<TextBlock Margin="30" FontSize="30">现金兑换公式</TextBlock>
+						<WrapPanel Margin="60,0,0,0"  Orientation="Horizontal" VerticalAlignment="Center">
+							<TextBlock Margin="5" VerticalAlignment="Center">当天营业额满</TextBlock>
+							<TextBox Margin="5" Width="50" Name="LogicTotalMoneyTextbox" VerticalAlignment="Center"></TextBox>
+							<TextBlock Margin="5" VerticalAlignment="Center">元，使用1张兑换券。</TextBlock>
+						</WrapPanel>
+						<WrapPanel Margin="60,0,0,0"  Orientation="Horizontal" VerticalAlignment="Center">
+							<TextBlock Margin="5" VerticalAlignment="Center">当天营业额 ÷</TextBlock>
+							<TextBox IsReadOnly="True" Width="50" Background="LightGray" Margin="5" Name="LogicTotalMoneyReadTextbox" VerticalAlignment="Center"></TextBox>
+							<TextBlock Margin="5" VerticalAlignment="Center">=  商（当天可兑换现金数量）</TextBlock>
+						</WrapPanel>
+						<TextBlock Margin="65,5,0,0" VerticalAlignment="Center">历史可兑换现金数量  +  当天可兑换现金数量  -  当天已兑换现金数量  =  当天剩余可兑换现金数量</TextBlock>
+					</WrapPanel>
+					<!--公式管理第三列(兑换券编号头设置)-->
+					<WrapPanel Grid.Row="2" Orientation="Vertical">
+						<TextBlock Margin="30" FontSize="30">兑换券编号头设置</TextBlock>
+						<WrapPanel Margin="60,0,0,0"  Orientation="Horizontal" VerticalAlignment="Center">
+							<TextBlock Margin="5" VerticalAlignment="Center">兑换券编号头设置为</TextBlock>
+							<TextBox Margin="5" Width="50" Name="LogicTicketNoTextbox" VerticalAlignment="Center"></TextBox>
+							<TextBlock Margin="5" VerticalAlignment="Center">。</TextBlock>
+						</WrapPanel>
+						<TextBlock Margin="65,0,0,0" Foreground="Red" VerticalAlignment="Center">注：系统默认兑换券编号为头+(0-9999)，如（A1000000-A1009999)，请及时更换。</TextBlock>
+						<Button Margin="65,30,0,0" Name="LogicSave" Width="100" VerticalAlignment="Center" HorizontalAlignment="Left" Click="LogicSave_Click">保存</Button>
+					</WrapPanel>
 
+				</Grid>
 			</TabItem>
 		</TabControl>
 	</Grid>
