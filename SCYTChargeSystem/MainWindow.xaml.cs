@@ -149,6 +149,10 @@ namespace SCYTChargeSystem
 		/// </summary>
 		private void LoadMain()
 		{
+			MainAddPhoneNumberTextbox.Text = string.Empty;
+			MainAddMoneyTextbox.Text = string.Empty;
+			MainReceiveTicketTextblock.Text = string.Empty;
+
 			//获取主页datagrid
 			DbHelper db = new DbHelper();
 			DbCommand selectmain = db.GetSqlStringCommond("select top(10)* from Ticket where State = 1 order by CreateDate ASC,UID ASC");
@@ -189,30 +193,11 @@ namespace SCYTChargeSystem
 
 			//获取营业额
 			//换了Money的表了请及时纠正
-			TimeSpan ts = DateTime.Now - Convert.ToDateTime(DateTime.Today.ToShortDateString() + " 06:00:00");
-			DbCommand GetTodayTotalMoneymain;
-			if(ts.TotalHours > 0)
-			{
-				GetTodayTotalMoneymain = db.GetSqlStringCommond("SELECT DISTINCT Money FROM Ticket where CreateDate between dateadd(hh,+6,Datename(year,GetDate())+'-'+Datename(month,GetDate())+'-'+Datename(day,GetDate()))and DATEADD(day,1,dateadd(hh,+6,Datename(year,GetDate()) + '-' + Datename(month,GetDate()) + '-' + Datename(day,GetDate())))");
-			}
-			else
-			{
-				GetTodayTotalMoneymain = db.GetSqlStringCommond("SELECT DISTINCT Money FROM Ticket where CreateDate between dateadd(hh,-18,Datename(year,GetDate())+'-'+Datename(month,GetDate())+'-'+Datename(day,GetDate()))and DATEADD(day,1,dateadd(hh,-18,Datename(year,GetDate()) + '-' + Datename(month,GetDate()) + '-' + Datename(day,GetDate())))");
-			}
-			DataTable TodayTotalMoneydt = db.ExecuteDataTable(GetTodayTotalMoneymain);
-			decimal TodayTotalMoney = 0;
-			for(int i =0;i<TodayTotalMoneydt.Rows.Count;i++)
-			{
-				for(int j = 0;j < TodayTotalMoneydt.Columns.Count;j++)
-				{
-					TodayTotalMoney = TodayTotalMoney + (decimal)TodayTotalMoneydt.Rows[i][j];
-				}
-			}
-			TotalMoneyTextblock.Text = Math.Round(TodayTotalMoney,2).ToString();
+			LoadMoney();
+			
 
 
 			//获取其他信息
-			//LoadHistory();
 			DbCommand selecthistory = db.GetSqlStringCommond("select * from TicketNum");
 			int historynum = (int)db.ExecuteScalar(selecthistory);
 			int nownum = (int)(Convert.ToDecimal(TotalMoneyTextblock.Text) / Convert.ToInt32(LogicTotalMoneyTextbox.Text)) + historynum;
@@ -241,19 +226,64 @@ namespace SCYTChargeSystem
 			RemainNumTextblock.Text = (Convert.ToInt32(TotalSendNumTextblock.Text) - Convert.ToInt32(SendNumTextblock.Text)).ToString();
 		}
 
-		private void LoadHistory()
+		private void LoadMoney()
 		{
 			DbHelper db = new DbHelper();
-			DbCommand selecthistory = db.GetSqlStringCommond("select * from History where CreateDate = Datename(year,GetDate())+'-'+Datename(month,GetDate())+'-'+Datename(day,GetDate())");
-			DataTable historydt = db.ExecuteDataTable(selecthistory);
-
-			//没有今天的记录,要创建
-			if(historydt.Rows.Count == 0)
+			TimeSpan ts = DateTime.Now - Convert.ToDateTime(DateTime.Today.ToShortDateString() + " 06:00:00");
+			DbCommand GetTodayTotalMoneymain;
+			DataTable TodayTotalMoneydt;
+			decimal TodayTotalMoney;
+			if(ts.TotalHours > 0)
 			{
-				//AddHistory()
+				GetTodayTotalMoneymain = db.GetSqlStringCommond("SELECT TotalMoney FROM Money where StartTime = dateadd(hh,+6,Datename(year,GetDate())+'-'+Datename(month,GetDate())+'-'+Datename(day,GetDate())) and EndTime = DATEADD(day,1,dateadd(hh,+6,Datename(year,GetDate()) + '-' + Datename(month,GetDate()) + '-' + Datename(day,GetDate())))");
+				DataTable moneydt = db.ExecuteDataTable(GetTodayTotalMoneymain);
+
+				//没有今天的记录,要创建
+				if(moneydt.Rows.Count == 0)
+				{
+					using(Trans t = new Trans())
+					{
+						try
+						{
+							DoBussiness.AddMoney(t,0);
+							t.Commit();
+							LoadMoney();
+						}
+						catch(Exception ex)
+						{
+							MessageBox.Show(ex.Message + " ,添加营业额统计失败,请联系管理员");
+							t.RollBack();
+						}
+					}
+				}
+				else
+				{
+					TodayTotalMoneydt = db.ExecuteDataTable(GetTodayTotalMoneymain);
+					TodayTotalMoney = 0;
+					for(int i = 0;i < TodayTotalMoneydt.Rows.Count;i++)
+					{
+						for(int j = 0;j < TodayTotalMoneydt.Columns.Count;j++)
+						{
+							TodayTotalMoney = TodayTotalMoney + (decimal)TodayTotalMoneydt.Rows[i][j];
+						}
+					}
+					TotalMoneyTextblock.Text = Math.Round(TodayTotalMoney,2).ToString();
+				}
 			}
-
-
+			else
+			{
+				GetTodayTotalMoneymain = db.GetSqlStringCommond("SELECT TotalMoney FROM Money where StartTime = dateadd(hh,-18,Datename(year,GetDate())+'-'+Datename(month,GetDate())+'-'+Datename(day,GetDate())) and EndTime = DATEADD(day,1,dateadd(hh,-18,Datename(year,GetDate()) + '-' + Datename(month,GetDate()) + '-' + Datename(day,GetDate())))");
+			}
+			TodayTotalMoneydt = db.ExecuteDataTable(GetTodayTotalMoneymain);
+			TodayTotalMoney = 0;
+			for(int i = 0;i < TodayTotalMoneydt.Rows.Count;i++)
+			{
+				for(int j = 0;j < TodayTotalMoneydt.Columns.Count;j++)
+				{
+					TodayTotalMoney = TodayTotalMoney + (decimal)TodayTotalMoneydt.Rows[i][j];
+				}
+			}
+			TotalMoneyTextblock.Text = Math.Round(TodayTotalMoney,2).ToString();
 		}
 
 		/// <summary>
@@ -268,7 +298,6 @@ namespace SCYTChargeSystem
 				int AddNum = Convert.ToInt32(MainReceiveTicketTextblock.Text);
 				if(AddNum >= 1)
 				{
-					bool IsSucceed = true;
 					string copyTicketNo = MainAddTicketNoTextblock.Text;
 					using(Trans t = new Trans())
 					{
@@ -282,32 +311,37 @@ namespace SCYTChargeSystem
 								DoBussiness.AddTicket(t,no,phone,money);
 								TicketNoIncrease(MainAddTicketNoTextblock.Text.Remove(0,LogicTicketNoTextbox.Text.Length));
 							}
+							DoBussiness.UpdateMoney(t,money);
 							t.Commit();
+							MessageBox.Show("添加成功");
+							LoadMain();
 						}
 						catch(Exception ex)
 						{
-							IsSucceed = false;
-							MessageBox.Show(ex.Message);
+							MessageBox.Show(ex.Message + ",添加失败,请联系管理员");
 							t.RollBack();
 							MainAddTicketNoTextblock.Text = copyTicketNo;
-						}
-						finally
-						{
-							if(IsSucceed)
-							{
-								MessageBox.Show("添加成功");
-								LoadMain();
-							}
-							else
-							{
-								MessageBox.Show("添加失败");
-							}
 						}
 					}
 				}
 				else
 				{
-					MessageBox.Show("消费额度未满,不能发放兑换券");
+					MessageBox.Show("消费额度未满,不能发放兑换券,但营业额仍会更新");
+					using(Trans t = new Trans())
+					{
+						try
+						{
+							decimal money = Convert.ToDecimal(MainAddMoneyTextbox.Text);
+							DoBussiness.UpdateMoney(t,money);
+							t.Commit();
+							LoadMain();
+						}
+						catch(Exception ex)
+						{
+							MessageBox.Show(ex.Message);
+							t.RollBack();
+						}
+					}
 				}
 			}
 			else
@@ -391,6 +425,10 @@ namespace SCYTChargeSystem
 					if(money / logicmonty >= 1)
 					{
 						MainReceiveTicketTextblock.Text = ((int)(money / logicmonty)).ToString();
+					}
+					else
+					{
+						MainReceiveTicketTextblock.Text = "0";
 					}
 				}
 			}

@@ -42,15 +42,14 @@ namespace SCYTChargeSystem
 			}
 		}
 
-		public static void AddHistory(Trans t,int num,decimal money)
+		public static void AddMoney(Trans t,decimal money)
 		{
 			DbHelper db = new DbHelper();
 			DateTime HistoryCreateDate = new DateTime();
 			HistoryCreateDate = Convert.ToDateTime(DateTime.Now.ToShortDateString());
-			DbCommand insert = db.GetSqlStringCommond("insert into History values (@HistoryTicketNum, @HistotyMoney, @CreateDate),StartTime = dateadd(hh,-18,Datename(year,GetDate())+'-'+Datename(month,GetDate())+'-'+Datename(day,GetDate())) , EndTime = DATEADD(day,1,dateadd(hh,-18,Datename(year,GetDate()) + '-' + Datename(month,GetDate()) + '-' + Datename(day,GetDate())))");
+			DbCommand insert = db.GetSqlStringCommond("insert into Money values (@TotalMoney, @CreateDate,dateadd(hh,+6,Datename(year,GetDate())+'-'+Datename(month,GetDate())+'-'+Datename(day,GetDate())) ,DATEADD(day,1,dateadd(hh,+6,Datename(year,GetDate()) + '-' + Datename(month,GetDate()) + '-' + Datename(day,GetDate()))))");
 
-			db.AddInParameter(insert,"@HistoryTicketNum",DbType.Int32,num);
-			db.AddInParameter(insert,"@HistotyMoney",DbType.Decimal,money);
+			db.AddInParameter(insert,"@TotalMoney",DbType.Decimal,money);
 			db.AddInParameter(insert,"@CreateDate",DbType.DateTime,HistoryCreateDate);
 
 			if(t == null)
@@ -60,6 +59,23 @@ namespace SCYTChargeSystem
 			else
 			{
 				db.ExecuteNonQuery(insert,t);
+			}
+		}
+
+		public static void UpdateMoney(Trans t,decimal money)
+		{
+			DbHelper db = new DbHelper();
+			DbCommand update = db.GetSqlStringCommond("update Money set TotalMoney= TotalMoney + @TotalMoney");
+
+			db.AddInParameter(update,"@TotalMoney",DbType.Decimal,money);
+
+			if(t == null)
+			{
+				db.ExecuteNonQuery(update);
+			}
+			else
+			{
+				db.ExecuteNonQuery(update,t);
 			}
 		}
 
