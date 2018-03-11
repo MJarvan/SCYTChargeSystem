@@ -28,7 +28,7 @@
 						<Border Grid.Column="0" Margin="5" BorderThickness="3" BorderBrush="Black" CornerRadius="10">
 							<Grid>
 								<WrapPanel Margin="20" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
-									<TextBlock FontSize="30" Name="TotalMoneyTextblock" HorizontalAlignment="Left">100000</TextBlock>
+									<TextBlock FontSize="30" Name="TotalMoneyTextblock" HorizontalAlignment="Left"></TextBlock>
 									<TextBlock Margin="10,10,0,0" FontSize="20" HorizontalAlignment="Right">元</TextBlock>
 								</WrapPanel>
 								<TextBlock Margin="10" FontSize="15" VerticalAlignment="Bottom" HorizontalAlignment="Center">今天营业额</TextBlock>
@@ -38,7 +38,7 @@
 						<Border Grid.Column="1" Margin="5" BorderThickness="3" BorderBrush="Black" CornerRadius="10">
 							<Grid>
 								<WrapPanel Margin="20" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
-									<TextBlock FontSize="30" Name="TotalSendNumTextblock" HorizontalAlignment="Left">20</TextBlock>
+									<TextBlock FontSize="30" Name="TotalSendNumTextblock" HorizontalAlignment="Left"></TextBlock>
 									<TextBlock Margin="10,10,0,0" FontSize="20" HorizontalAlignment="Right">张</TextBlock>
 								</WrapPanel>
 								<TextBlock Margin="10" FontSize="15" VerticalAlignment="Bottom" HorizontalAlignment="Center">今天发券数</TextBlock>
@@ -48,7 +48,7 @@
 						<Border Grid.Column="2" Margin="5" BorderThickness="3" BorderBrush="Black" CornerRadius="10">
 							<Grid>
 								<WrapPanel Margin="20" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
-									<TextBlock FontSize="30" Name="RemainNumTextblock" HorizontalAlignment="Left">10</TextBlock>
+									<TextBlock FontSize="30" Name="RemainNumTextblock" HorizontalAlignment="Left"></TextBlock>
 									<TextBlock Margin="10,10,0,0" FontSize="20" HorizontalAlignment="Right">张</TextBlock>
 								</WrapPanel>
 								<TextBlock Margin="10" FontSize="15" VerticalAlignment="Bottom" HorizontalAlignment="Center">今天剩余可兑换数</TextBlock>
@@ -58,7 +58,7 @@
 						<Border Grid.Column="3" Margin="5" BorderThickness="3" BorderBrush="Black" CornerRadius="10">
 							<Grid>
 								<WrapPanel Margin="20" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
-									<TextBlock FontSize="30" Name="SendNumTextblock" HorizontalAlignment="Left">10</TextBlock>
+									<TextBlock FontSize="30" Name="SendNumTextblock" HorizontalAlignment="Left"></TextBlock>
 									<TextBlock Margin="10,10,0,0" FontSize="20" HorizontalAlignment="Right">张</TextBlock>
 								</WrapPanel>
 								<TextBlock Margin="10" FontSize="15" VerticalAlignment="Bottom" HorizontalAlignment="Center">今天已兑换数</TextBlock>
@@ -69,30 +69,45 @@
 					<WrapPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
 						<WrapPanel Orientation="Horizontal" Margin="5">
 							<TextBlock Margin="5">兑换券开始编号</TextBlock>
-							<TextBox Width="100" Name="MainAddTicketNoTextbox"></TextBox>
+							<TextBlock FontSize="20" Width="100" Name="MainAddTicketNoTextblock"></TextBlock>
 						</WrapPanel>
 						<WrapPanel Orientation="Horizontal" Margin="5">
 							<TextBlock Margin="5">手机号</TextBlock>
-							<TextBox Width="100" Name="MainAddPhoneNumberTextbox"></TextBox>
+							<TextBox Width="100" Name="MainAddPhoneNumberTextbox" TextChanged="MainAddPhoneNumberTextbox_TextChanged"></TextBox>
 						</WrapPanel>
 						<WrapPanel Orientation="Horizontal" Margin="5">
 							<TextBlock Margin="5" Foreground="Red">消费金额</TextBlock>
-							<TextBox Width="100" Name="MainAddMoneyTextbox"></TextBox>
+							<TextBox Width="100" Name="MainAddMoneyTextbox" TextChanged="MainAddMoneyTextbox_TextChanged"></TextBox>
 						</WrapPanel>
 						<WrapPanel Orientation="Horizontal" Margin="5">
 							<TextBlock Margin="5">领券数量</TextBlock>
-							<TextBlock FontSize="20" Width="100" Name="MainReceiveTicketTextblock">10</TextBlock>
+							<TextBlock FontSize="20" Width="100" Name="MainReceiveTicketTextblock"></TextBlock>
 						</WrapPanel>
-						<Button Width="50" Margin="5" Name="MainAddTicketButton">添加</Button>
+						<Button Width="50" Margin="5" Name="MainAddTicketButton" Click="MainAddTicketButton_Click">添加</Button>
 					</WrapPanel>
 					<WrapPanel Grid.Row="2" Orientation="Vertical" VerticalAlignment="Center">
 						<WrapPanel Orientation="Horizontal" Margin="5">
-							<Button Width="50" Margin="5" Name="MainConfirmTicketButton">领取</Button>
-							<Button Width="50" Margin="5" Name="MainDeleteTicketButton">过号</Button>
+							<Button Width="50" Margin="5" Name="MainConfirmTicketButton" Click="MainConfirmTicketButton_Click">领取</Button>
+							<Button Width="50" Margin="5" Name="MainOverTicketButton" Click="MainOverTicketButton_Click">过号</Button>
 						</WrapPanel>
 					</WrapPanel>
 					<!--主页第三列(兑换券详细信息)-->
-					<DataGrid Margin="5,0,0,0" Grid.Row="3" Name="MainTicketDatagrid"></DataGrid>
+					<DataGrid Margin="5,0,0,0" Grid.Row="3" Name="MainTicketDatagrid" Width="Auto" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="True" SelectionUnit="FullRow" ScrollViewer.VerticalScrollBarVisibility="Visible">
+						<DataGrid.Columns>
+							<DataGridTemplateColumn CanUserReorder="False">
+								<DataGridTemplateColumn.CellTemplate>
+									<DataTemplate>
+										<CheckBox x:Name="checkbox" IsChecked="{Binding Path=IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></CheckBox>
+									</DataTemplate>
+								</DataGridTemplateColumn.CellTemplate>
+							</DataGridTemplateColumn>
+							<DataGridTextColumn Header="兑换券编号" IsReadOnly="True" Binding="{Binding Path=No}"/>
+							<DataGridTextColumn Header="手机号" IsReadOnly="True" Binding="{Binding Path=Phone}" />
+							<DataGridTextColumn Header="消费金额" IsReadOnly="True" Binding="{Binding Path=Money}"/>
+							<DataGridTextColumn Header="领券时间" IsReadOnly="True" Binding="{Binding Path=CreateDate,StringFormat='yyyy-MM-dd HH:mm:ss'}"/>
+							<DataGridTextColumn Header="兑换状态" IsReadOnly="True" Binding="{Binding Path=State}"  Width ="*"/>
+						</DataGrid.Columns>
+					</DataGrid>
 				</Grid>
 			</TabItem>
 			<TabItem Height="50" Header="兑换券管理">
@@ -135,7 +150,8 @@
 					<WrapPanel Grid.Row="2" Orientation="Vertical" VerticalAlignment="Center">
 						<WrapPanel Orientation="Horizontal" Margin="5">
 							<Button Width="50" Margin="5" Name="ManageConfirmTicketButton">领取</Button>
-							<Button Width="50" Margin="5" Name="ManageDeleteTicketButton">过号</Button>
+							<Button Width="50" Margin="5" Name="ManageOverTicketButton">过号</Button>
+							<Button Width="50" Margin="5" Name="ManageDeleteTicketButton">删除</Button>
 						</WrapPanel>
 					</WrapPanel>
 					<DataGrid Margin="10,0,0,0" Grid.Row="3" Name="ManageTicketDatagrid"></DataGrid>
