@@ -50,6 +50,11 @@ namespace SCYTChargeSystem
 		/// </summary>
 		DataTable maindt = new DataTable();
 
+		/// <summary>
+		/// 管理页datatable
+		/// </summary>
+		DataTable managedt = new DataTable();
+
 		public MainWindow()
 		{
 			InitializeComponent();
@@ -144,6 +149,8 @@ namespace SCYTChargeSystem
 
 		#endregion
 
+		#region 主页
+
 		/// <summary>
 		/// 获取主界面
 		/// </summary>
@@ -152,6 +159,9 @@ namespace SCYTChargeSystem
 			MainAddPhoneNumberTextbox.Text = string.Empty;
 			MainAddMoneyTextbox.Text = string.Empty;
 			MainReceiveTicketTextblock.Text = string.Empty;
+			ManageAddPhoneNumberTextbox.Text = string.Empty;
+			ManageAddMoneyTextbox.Text = string.Empty;
+			ManageReceiveTicketTextblock.Text = string.Empty;
 
 			//获取主页datagrid
 			DbHelper db = new DbHelper();
@@ -182,20 +192,19 @@ namespace SCYTChargeSystem
 				else
 				{
 					MainAddTicketNoTextblock.Text = LogicTicketNoTextbox.Text + lastestNoFour;
+					ManageAddTicketNoTextblock.Text = LogicTicketNoTextbox.Text + lastestNoFour;
 					TicketNoIncrease(MainAddTicketNoTextblock.Text.Remove(0,LogicTicketNoTextbox.Text.Length));
 				}
 			}
 			catch
 			{
 				MainAddTicketNoTextblock.Text = LogicTicketNoTextbox.Text + "0000";
+				ManageAddTicketNoTextblock.Text = LogicTicketNoTextbox.Text + "0000";
 			}
 
 
 			//获取营业额
-			//换了Money的表了请及时纠正
 			LoadMoney();
-			
-
 
 			//获取其他信息
 			DbCommand selecthistory = db.GetSqlStringCommond("select * from TicketNum");
@@ -226,6 +235,9 @@ namespace SCYTChargeSystem
 			RemainNumTextblock.Text = (Convert.ToInt32(TotalSendNumTextblock.Text) - Convert.ToInt32(SendNumTextblock.Text)).ToString();
 		}
 
+		/// <summary>
+		/// 获取营业额
+		/// </summary>
 		private void LoadMoney()
 		{
 			DbHelper db = new DbHelper();
@@ -233,6 +245,7 @@ namespace SCYTChargeSystem
 			DbCommand GetTodayTotalMoneymain;
 			DataTable TodayTotalMoneydt;
 			decimal TodayTotalMoney;
+			//过了六点,今天
 			if(ts.TotalHours > 0)
 			{
 				GetTodayTotalMoneymain = db.GetSqlStringCommond("SELECT TotalMoney FROM Money where StartTime = dateadd(hh,+6,Datename(year,GetDate())+'-'+Datename(month,GetDate())+'-'+Datename(day,GetDate())) and EndTime = DATEADD(day,1,dateadd(hh,+6,Datename(year,GetDate()) + '-' + Datename(month,GetDate()) + '-' + Datename(day,GetDate())))");
@@ -270,6 +283,7 @@ namespace SCYTChargeSystem
 					TotalMoneyTextblock.Text = Math.Round(TodayTotalMoney,2).ToString();
 				}
 			}
+			//没过六点,昨天
 			else
 			{
 				GetTodayTotalMoneymain = db.GetSqlStringCommond("SELECT TotalMoney FROM Money where StartTime = dateadd(hh,-18,Datename(year,GetDate())+'-'+Datename(month,GetDate())+'-'+Datename(day,GetDate())) and EndTime = DATEADD(day,1,dateadd(hh,-18,Datename(year,GetDate()) + '-' + Datename(month,GetDate()) + '-' + Datename(day,GetDate())))");
@@ -321,6 +335,7 @@ namespace SCYTChargeSystem
 							MessageBox.Show(ex.Message + ",添加失败,请联系管理员");
 							t.RollBack();
 							MainAddTicketNoTextblock.Text = copyTicketNo;
+							ManageAddTicketNoTextblock.Text = copyTicketNo; 
 						}
 					}
 				}
@@ -363,6 +378,7 @@ namespace SCYTChargeSystem
 			{
 				string sum = "0001";
 				MainAddTicketNoTextblock.Text = LogicTicketNoTextbox.Text + sum;
+				ManageAddTicketNoTextblock.Text = LogicTicketNoTextbox.Text + sum;
 			}
 			else
 			{
@@ -398,6 +414,7 @@ namespace SCYTChargeSystem
 
 				string sum = four + three + two + one;
 				MainAddTicketNoTextblock.Text = LogicTicketNoTextbox.Text + sum;
+				ManageAddTicketNoTextblock.Text = LogicTicketNoTextbox.Text + sum;
 			}
 		}
 
@@ -425,10 +442,12 @@ namespace SCYTChargeSystem
 					if(money / logicmonty >= 1)
 					{
 						MainReceiveTicketTextblock.Text = ((int)(money / logicmonty)).ToString();
+						ManageReceiveTicketTextblock.Text = ((int)(money / logicmonty)).ToString(); ;
 					}
 					else
 					{
 						MainReceiveTicketTextblock.Text = "0";
+						ManageReceiveTicketTextblock.Text = "0";
 					}
 				}
 			}
@@ -472,7 +491,6 @@ namespace SCYTChargeSystem
 				{
 					if(MessageBox.Show("是否确认兑换这些券?","提醒",MessageBoxButton.YesNo,MessageBoxImage.Warning) == MessageBoxResult.Yes)
 					{
-						bool IsSucceed = true;
 						using(Trans t = new Trans())
 						{
 							try
@@ -484,24 +502,13 @@ namespace SCYTChargeSystem
 									DoBussiness.MainTicketStateChange(t,state,UID);
 								}
 								t.Commit();
+								MessageBox.Show("领取成功");
+								LoadMain();
 							}
 							catch(Exception ex)
 							{
-								IsSucceed = false;
-								MessageBox.Show(ex.Message);
+								MessageBox.Show(ex.Message + " ,领取失败,请联系管理员");
 								t.RollBack();
-							}
-							finally
-							{
-								if(IsSucceed)
-								{
-									MessageBox.Show("领取成功");
-									LoadMain();
-								}
-								else
-								{
-									MessageBox.Show("领取失败");
-								}
 							}
 						}
 					}
@@ -513,6 +520,11 @@ namespace SCYTChargeSystem
 			}
 		}
 
+		/// <summary>
+		/// 主页过号按钮
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void MainOverTicketButton_Click(object sender,RoutedEventArgs e)
 		{
 			DataRow[] drs = maindt.Select("IsSelected=True");
@@ -524,7 +536,6 @@ namespace SCYTChargeSystem
 			{
 				if(MessageBox.Show("是否确认过号这些券?","提醒",MessageBoxButton.YesNo,MessageBoxImage.Warning) == MessageBoxResult.Yes)
 				{
-					bool IsSucceed = true;
 					using(Trans t = new Trans())
 					{
 						try
@@ -536,27 +547,375 @@ namespace SCYTChargeSystem
 								DoBussiness.MainTicketStateChange(t,state,UID);
 							}
 							t.Commit();
+							MessageBox.Show("过号成功");
+							LoadMain();
 						}
 						catch(Exception ex)
 						{
-							IsSucceed = false;
+							MessageBox.Show(ex.Message + " ,过号失败,请联系管理员");
+							t.RollBack();
+						}
+					}
+				}
+			}
+		}
+
+		#endregion 主页
+
+		/// <summary>
+		/// 管理页添加按钮
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void ManageAddTicketButton_Click(object sender,RoutedEventArgs e)
+		{
+			if(ManageAddPhoneNumberTextbox.Text != null && ManageAddPhoneNumberTextbox.Text != "" && ManageAddMoneyTextbox.Text != null && ManageAddMoneyTextbox.Text != "")
+			{
+				int AddNum = Convert.ToInt32(ManageReceiveTicketTextblock.Text);
+				if(AddNum >= 1)
+				{
+					string copyTicketNo = ManageAddTicketNoTextblock.Text;
+					using(Trans t = new Trans())
+					{
+						try
+						{
+							string phone = ManageAddPhoneNumberTextbox.Text;
+							decimal money = Convert.ToDecimal(ManageAddMoneyTextbox.Text);
+							for(int i = 0;i < AddNum;i++)
+							{
+								string no = ManageAddTicketNoTextblock.Text;
+								DoBussiness.AddTicket(t,no,phone,money);
+								TicketNoIncrease(ManageAddTicketNoTextblock.Text.Remove(0,LogicTicketNoTextbox.Text.Length));
+							}
+							DoBussiness.UpdateMoney(t,money);
+							t.Commit();
+							MessageBox.Show("添加成功");
+							LoadMain();
+						}
+						catch(Exception ex)
+						{
+							MessageBox.Show(ex.Message + ",添加失败,请联系管理员");
+							t.RollBack();
+							MainAddTicketNoTextblock.Text = copyTicketNo;
+							ManageAddTicketNoTextblock.Text = copyTicketNo;
+						}
+					}
+				}
+				else
+				{
+					MessageBox.Show("消费额度未满,不能发放兑换券,但营业额仍会更新");
+					using(Trans t = new Trans())
+					{
+						try
+						{
+							decimal money = Convert.ToDecimal(ManageAddMoneyTextbox.Text);
+							DoBussiness.UpdateMoney(t,money);
+							t.Commit();
+							LoadMain();
+						}
+						catch(Exception ex)
+						{
 							MessageBox.Show(ex.Message);
 							t.RollBack();
 						}
-						finally
+					}
+				}
+			}
+			else
+			{
+				MessageBox.Show("请填写完整信息");
+			}
+		}
+
+		/// <summary>
+		/// 管理页领取按钮
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void ManageConfirmTicketButton_Click(object sender,RoutedEventArgs e)
+		{
+			if(managedt.Rows.Count > 0)
+			{
+				DataRow[] drs = managedt.Select("IsSelected=True");
+				if(drs.Length == 0)
+				{
+					MessageBox.Show("请选择要操作的行");
+				}
+				else
+				{
+					if(Convert.ToInt32(TotalSendNumTextblock.Text) > 0)
+					{
+						if(MessageBox.Show("是否确认兑换这些券?","提醒",MessageBoxButton.YesNo,MessageBoxImage.Warning) == MessageBoxResult.Yes)
 						{
-							if(IsSucceed)
+							using(Trans t = new Trans())
 							{
+								try
+								{
+									foreach(DataRow dr in drs)
+									{
+										string state = "2";
+										int UID = Convert.ToInt32(dr["UID"].ToString());
+										DoBussiness.MainTicketStateChange(t,state,UID);
+									}
+									t.Commit();
+									MessageBox.Show("领取成功");
+									LoadMain();
+									QueryTicketButton_Click(sender,e);
+								}
+								catch(Exception ex)
+								{
+									MessageBox.Show(ex.Message + " ,领取失败,请联系管理员");
+									t.RollBack();
+								}
+							}
+						}
+					}
+					else
+					{
+						MessageBox.Show("今天没有可用发放兑换券的额度");
+					}
+				}
+			}
+			else
+			{
+				MessageBox.Show("请先查询数据");
+			}
+		}
+
+		/// <summary>
+		/// 管理页过号按钮
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void ManageOverTicketButton_Click(object sender,RoutedEventArgs e)
+		{
+			if(managedt.Rows.Count > 0)
+			{
+				DataRow[] drs = managedt.Select("IsSelected=True");
+				if(drs.Length == 0)
+				{
+					MessageBox.Show("请选择要操作的行");
+				}
+				else
+				{
+					if(MessageBox.Show("是否确认过号这些券?","提醒",MessageBoxButton.YesNo,MessageBoxImage.Warning) == MessageBoxResult.Yes)
+					{
+						using(Trans t = new Trans())
+						{
+							try
+							{
+								foreach(DataRow dr in drs)
+								{
+									string state = "0";
+									int UID = Convert.ToInt32(dr["UID"].ToString());
+									DoBussiness.MainTicketStateChange(t,state,UID);
+								}
+								t.Commit();
 								MessageBox.Show("过号成功");
 								LoadMain();
+								QueryTicketButton_Click(sender,e);
 							}
-							else
+							catch(Exception ex)
 							{
-								MessageBox.Show("过号失败");
+								MessageBox.Show(ex.Message + " ,过号失败,请联系管理员");
+								t.RollBack();
 							}
 						}
 					}
 				}
+			}
+			else
+			{
+				MessageBox.Show("请先查询数据");
+			}
+		}
+
+		/// <summary>
+		/// 管理页重新排队
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void ManageRequeueTicketButton_Click(object sender,RoutedEventArgs e)
+		{
+			if(managedt.Rows.Count > 0)
+			{
+				DataRow[] drs = managedt.Select("IsSelected=True");
+				if(drs.Length == 0)
+				{
+					MessageBox.Show("请选择要操作的行");
+				}
+				else
+				{
+					if(MessageBox.Show("是否确认重新排队这些券?","提醒",MessageBoxButton.YesNo,MessageBoxImage.Warning) == MessageBoxResult.Yes)
+					{
+						using(Trans t = new Trans())
+						{
+							try
+							{
+								foreach(DataRow dr in drs)
+								{
+									string state = "1";
+									int UID = Convert.ToInt32(dr["UID"].ToString());
+									DoBussiness.MainTicketStateChange(t,state,UID);
+								}
+								t.Commit();
+								MessageBox.Show("重新排队成功");
+								LoadMain();
+								QueryTicketButton_Click(sender,e);
+							}
+							catch(Exception ex)
+							{
+								MessageBox.Show(ex.Message + " ,重新排队失败,请联系管理员");
+								t.RollBack();
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				MessageBox.Show("请先查询数据");
+			}
+		}
+
+		private void ManageDeleteTicketButton_Click(object sender,RoutedEventArgs e)
+		{
+			if(managedt.Rows.Count > 0)
+			{
+				DataRow[] drs = managedt.Select("IsSelected=True");
+				if(drs.Length == 0)
+				{
+					MessageBox.Show("请选择要操作的行");
+				}
+				else
+				{
+					foreach(DataRow dr in drs)
+					{
+						TimeSpan ts = DateTime.Now - Convert.ToDateTime(DateTime.Today.ToShortDateString() + " 06:00:00");
+						//今天
+						if(ts.TotalHours > 0)
+						{
+							if(Convert.ToDateTime(dr["CreateDate"]).ToShortDateString() != DateTime.Today.ToShortDateString())
+							{
+								MessageBox.Show("只能作废当天的兑换券,请重新操作");
+								return;
+							}
+						}
+						//昨天
+						else
+						{
+							if(Convert.ToDateTime(dr["CreateDate"]).ToShortDateString() != DateTime.Now.AddDays(-1).ToShortDateString())
+							{
+								MessageBox.Show("只能作废当天的兑换券,请重新操作");
+								return;
+							}
+						}
+					}
+					if(MessageBox.Show("是否确认作废这些券?","提醒",MessageBoxButton.YesNo,MessageBoxImage.Warning) == MessageBoxResult.Yes)
+					{
+						using(Trans t = new Trans())
+						{
+							try
+							{
+								foreach(DataRow dr in drs)
+								{
+									string state = "3";
+									int UID = Convert.ToInt32(dr["UID"].ToString());
+									DoBussiness.MainTicketStateChange(t,state,UID);
+								}
+								t.Commit();
+								MessageBox.Show("作废成功");
+								LoadMain();
+								QueryTicketButton_Click(sender,e);
+							}
+							catch(Exception ex)
+							{
+								MessageBox.Show(ex.Message + " ,作废失败,请联系管理员");
+								t.RollBack();
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				MessageBox.Show("请先查询数据");
+			}
+		}
+
+		private void QueryTicketButton_Click(object sender,RoutedEventArgs e)
+		{
+			string state = string.Empty;
+			string createdate = string.Empty;
+			string querytext = string.Empty;
+			if(QueryTicketCombobox.SelectedItem != null)
+			{
+				switch(QueryTicketCombobox.Text.ToString())
+				{
+					case "过号":
+						{
+							state = "0";
+							break;
+						}
+					case "未领取":
+						{
+							state = "1";
+							break;
+						}
+					case "已领取":
+						{
+							state = "2";
+							break;
+						}
+					case "作废":
+						{
+							state = "3";
+							break;
+						}
+				}
+			}
+			if(QueryTicketDatepicker.Text != null || QueryTicketDatepicker.Text != "")
+			{
+				createdate = QueryTicketDatepicker.Text.Trim();
+			}
+			if(QueryTicketNoTextbox.Text != null || QueryTicketNoTextbox.Text != "")
+			{
+				querytext = "%" + QueryTicketNoTextbox.Text.Trim() + "%";
+			}
+
+			managedt = DoBussiness.ManageQuery(state,createdate,querytext);
+			if(managedt != null)
+			{
+				DataRow[] IsSelectedRows = managedt.Select("IsSelected=0");
+				foreach(DataRow row in IsSelectedRows)
+				{
+					row["IsSelected"] = false;
+					switch(Convert.ToInt32(row["State"]))
+					{
+						case 0:
+							{
+								row["State"] = "过号";
+								break;
+							}
+						case 1:
+							{
+								row["State"] = "未领取";
+								break;
+							}
+						case 2:
+							{
+								row["State"] = "已领取";
+								break;
+							}
+						case 3:
+							{
+								row["State"] = "作废";
+								break;
+							}
+					}
+				}
+
+				ManageTicketDatagrid.ItemsSource = managedt.DefaultView;
 			}
 		}
 	}

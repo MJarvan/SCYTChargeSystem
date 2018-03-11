@@ -116,5 +116,88 @@ namespace SCYTChargeSystem
 				db.ExecuteNonQuery(update,t);
 			}
 		}
+
+		public static DataTable ManageQuery(string state,string createdate,string querytext)
+		{
+			DataTable dt = null;
+			DbHelper db = new DbHelper();
+			DbCommand selectmanage = null;
+			if(state != string.Empty)
+			{
+				if(createdate != string.Empty)
+				{
+					DateTime datetime = Convert.ToDateTime(createdate);
+					if(querytext != string.Empty)
+					{
+						//三个都有
+						selectmanage = db.GetSqlStringCommond("select * from Ticket where State = @State and CreateDate between dateadd(hh,+6,Datename(year,@CreateDate) + '-' + Datename(month,@CreateDate) + '-' + Datename(day,@CreateDate)) and DATEADD(day,1,dateadd(hh,+6,Datename(year,@CreateDate) + '-' + Datename(month,@CreateDate) + '-' + Datename(day,@CreateDate))) and No LIKE @querytext");
+						db.AddInParameter(selectmanage,"@State",DbType.String,state);
+						db.AddInParameter(selectmanage,"@CreateDate",DbType.DateTime,datetime);
+						db.AddInParameter(selectmanage,"@querytext",DbType.String,querytext);
+					}
+					else
+					{
+						//只有状态和日期
+						selectmanage = db.GetSqlStringCommond("select * from Ticket where State = @State and CreateDate between dateadd(hh,+6,Datename(year,@CreateDate) + '-' + Datename(month,@CreateDate) + '-' + Datename(day,@CreateDate)) and DATEADD(day,1,dateadd(hh,+6,Datename(year,@CreateDate) + '-' + Datename(month,@CreateDate) + '-' + Datename(day,@CreateDate)))");
+						db.AddInParameter(selectmanage,"@State",DbType.String,state);
+						db.AddInParameter(selectmanage,"@CreateDate",DbType.DateTime,datetime);
+					}
+				}
+				else
+				{
+					if(querytext != string.Empty)
+					{
+						//只有状态和文本
+						selectmanage = db.GetSqlStringCommond("select * from Ticket where State = @State and No LIKE @querytext");
+						db.AddInParameter(selectmanage,"@State",DbType.String,state);
+						db.AddInParameter(selectmanage,"@querytext",DbType.String,querytext);
+					}
+					else
+					{
+						//只有状态
+						selectmanage = db.GetSqlStringCommond("select * from Ticket where State = @State");
+						db.AddInParameter(selectmanage,"@State",DbType.String,state);
+					}
+				}
+			}
+			else
+			{
+				if(createdate != string.Empty)
+				{
+					DateTime datetime = Convert.ToDateTime(createdate);
+					if(querytext != string.Empty)
+					{
+						//只有日期和文本
+						selectmanage = db.GetSqlStringCommond("select * from Ticket where CreateDate between dateadd(hh,+6,Datename(year,@CreateDate) + '-' + Datename(month,@CreateDate) + '-' + Datename(day,@CreateDate)) and DATEADD(day,1,dateadd(hh,+6,Datename(year,@CreateDate) + '-' + Datename(month,@CreateDate) + '-' + Datename(day,@CreateDate))) and No LIKE @querytext");
+						db.AddInParameter(selectmanage,"@CreateDate",DbType.DateTime,datetime);
+						db.AddInParameter(selectmanage,"@querytext",DbType.String,querytext);
+					}
+					else
+					{
+						//只有日期
+						selectmanage = db.GetSqlStringCommond("select * from Ticket where CreateDate between dateadd(hh,+6,Datename(year,@CreateDate) + '-' + Datename(month,@CreateDate) + '-' + Datename(day,@CreateDate)) and DATEADD(day,1,dateadd(hh,+6,Datename(year,@CreateDate) + '-' + Datename(month,@CreateDate) + '-' + Datename(day,@CreateDate)))");
+						db.AddInParameter(selectmanage,"@CreateDate",DbType.DateTime,datetime);
+					}
+				}
+				else
+				{
+					if(querytext != string.Empty)
+					{
+						//只有文本
+						selectmanage = db.GetSqlStringCommond("select * from Ticket where No LIKE @querytext");
+						db.AddInParameter(selectmanage,"@querytext",DbType.String,querytext);
+					}
+					else
+					{
+						//啥都没
+					}
+				}
+			}
+			if(selectmanage != null)
+			{
+				dt = db.ExecuteDataTable(selectmanage);
+			}
+			return dt;
+		}
 	}
 }

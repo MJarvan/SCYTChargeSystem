@@ -104,8 +104,8 @@
 							<DataGridTextColumn Header="兑换券编号" IsReadOnly="True" Binding="{Binding Path=No}"/>
 							<DataGridTextColumn Header="手机号" IsReadOnly="True" Binding="{Binding Path=Phone}" />
 							<DataGridTextColumn Header="消费金额" IsReadOnly="True" Binding="{Binding Path=Money}"/>
-							<DataGridTextColumn Header="领券时间" IsReadOnly="True" Binding="{Binding Path=CreateDate,StringFormat='yyyy-MM-dd HH:mm:ss'}"/>
-							<DataGridTextColumn Header="兑换状态" IsReadOnly="True" Binding="{Binding Path=State}"  Width ="*"/>
+							<DataGridTextColumn Header="兑换状态" IsReadOnly="True" Binding="{Binding Path=State}"/>
+							<DataGridTextColumn Header="领券时间" IsReadOnly="True" Binding="{Binding Path=CreateDate,StringFormat='yyyy-MM-dd HH:mm:ss'}" Width ="*"/>
 						</DataGrid.Columns>
 					</DataGrid>
 				</Grid>
@@ -122,39 +122,61 @@
 					<WrapPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
 						<WrapPanel Orientation="Horizontal" Margin="5">
 							<TextBlock Margin="5">兑换券开始编号</TextBlock>
-							<TextBox Width="100" Name="ManageAddTicketNoTextbox"></TextBox>
+							<TextBlock FontSize="20" Width="100" Name="ManageAddTicketNoTextblock"></TextBlock>
 						</WrapPanel>
 						<WrapPanel Orientation="Horizontal" Margin="5">
 							<TextBlock Margin="5">手机号</TextBlock>
-							<TextBox Width="100" Name="ManageAddPhoneNumberTextbox"></TextBox>
+							<TextBox Width="100" Name="ManageAddPhoneNumberTextbox" TextChanged="MainAddPhoneNumberTextbox_TextChanged"></TextBox>
 						</WrapPanel>
 						<WrapPanel Orientation="Horizontal" Margin="5">
 							<TextBlock Margin="5" Foreground="Red">消费金额</TextBlock>
-							<TextBox Width="100" Name="ManageAddMoneyTextbox"></TextBox>
+							<TextBox Width="100" Name="ManageAddMoneyTextbox" TextChanged="MainAddMoneyTextbox_TextChanged"></TextBox>
 						</WrapPanel>
 						<WrapPanel Orientation="Horizontal" Margin="5">
 							<TextBlock Margin="5">领券数量</TextBlock>
-							<TextBlock FontSize="20" Width="100" Name="ManageReceiveTicketTextblock">10</TextBlock>
+							<TextBlock FontSize="20" Width="100" Name="ManageReceiveTicketTextblock"></TextBlock>
 						</WrapPanel>
-						<Button Width="50" Margin="5" Name="ManageAddTicketButton">添加</Button>
+						<Button Width="50" Margin="5" Name="ManageAddTicketButton" Click="ManageAddTicketButton_Click">添加</Button>
 					</WrapPanel>
 					<!--兑换券管理第二列(查询兑换券)-->
 					<WrapPanel Grid.Row="1" Orientation="Vertical" VerticalAlignment="Center">
 						<WrapPanel Orientation="Horizontal" Margin="5">
-							<ComboBox Width="100" Margin="5" Name="QueryTicketCombobox"></ComboBox>
+							<ComboBox Width="100" Margin="5" Name="QueryTicketCombobox">
+								<ComboBoxItem Content="过号" Tag="0"></ComboBoxItem>
+								<ComboBoxItem Content="未领取" Tag="1"></ComboBoxItem>
+								<ComboBoxItem Content="已领取" Tag="2"></ComboBoxItem>
+								<ComboBoxItem Content="作废" Tag="3"></ComboBoxItem>
+							</ComboBox>
 							<DatePicker Width="100" Margin="5" Name="QueryTicketDatepicker"></DatePicker>
 							<TextBox Width="100" Margin="5" Name="QueryTicketNoTextbox"></TextBox>
-							<Button Width="50" Margin="5" Name="QueryTicketButton">查询</Button>
+							<Button Width="50" Margin="5" Name="QueryTicketButton" Click="QueryTicketButton_Click">查询</Button>
 						</WrapPanel>
 					</WrapPanel>
 					<WrapPanel Grid.Row="2" Orientation="Vertical" VerticalAlignment="Center">
 						<WrapPanel Orientation="Horizontal" Margin="5">
-							<Button Width="50" Margin="5" Name="ManageConfirmTicketButton">领取</Button>
-							<Button Width="50" Margin="5" Name="ManageOverTicketButton">过号</Button>
-							<Button Width="50" Margin="5" Name="ManageDeleteTicketButton">删除</Button>
+							<Button Width="80" Margin="5" Name="ManageConfirmTicketButton" Click="ManageConfirmTicketButton_Click">领取</Button>
+							<Button Width="80" Margin="5" Name="ManageOverTicketButton" Click="ManageOverTicketButton_Click">过号</Button>
+							<Button Width="80" Margin="5" Name="ManageRequeueTicketButton" Click="ManageRequeueTicketButton_Click">重新排队</Button>
+							<Button Width="80" Margin="5" Name="ManageDeleteTicketButton" Click="ManageDeleteTicketButton_Click">删除</Button>
 						</WrapPanel>
 					</WrapPanel>
-					<DataGrid Margin="10,0,0,0" Grid.Row="3" Name="ManageTicketDatagrid"></DataGrid>
+					<DataGrid Margin="10,0,0,0" Grid.Row="3" Name="ManageTicketDatagrid" Width="Auto" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="True" SelectionUnit="FullRow" ScrollViewer.VerticalScrollBarVisibility="Visible">
+						<DataGrid.Columns>
+							<DataGridTemplateColumn CanUserReorder="False">
+								<DataGridTemplateColumn.CellTemplate>
+									<DataTemplate>
+										<CheckBox x:Name="checkbox" IsChecked="{Binding Path=IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></CheckBox>
+									</DataTemplate>
+								</DataGridTemplateColumn.CellTemplate>
+							</DataGridTemplateColumn>
+							<DataGridTextColumn Header="兑换券编号" IsReadOnly="True" Binding="{Binding Path=No}"/>
+							<DataGridTextColumn Header="手机号" IsReadOnly="True" Binding="{Binding Path=Phone}" />
+							<DataGridTextColumn Header="消费金额" IsReadOnly="True" Binding="{Binding Path=Money}"/>
+							<DataGridTextColumn Header="兑换状态" IsReadOnly="True" Binding="{Binding Path=State}"/>
+							<DataGridTextColumn Header="领券时间" IsReadOnly="True" Binding="{Binding Path=CreateDate,StringFormat='yyyy-MM-dd HH:mm:ss'}"/>
+							<DataGridTextColumn Header="操作时间" IsReadOnly="True" Binding="{Binding Path=UseDate,StringFormat='yyyy-MM-dd HH:mm:ss'}" Width ="*"/>
+						</DataGrid.Columns>
+					</DataGrid>
 				</Grid>
 			</TabItem>
 			<TabItem Height="50" Header="营业额管理">
