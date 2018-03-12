@@ -55,6 +55,11 @@ namespace SCYTChargeSystem
 		/// </summary>
 		DataTable managedt = new DataTable();
 
+		/// <summary>
+		/// 统计页datatable
+		/// </summary>
+		DataTable querydt = new DataTable();
+
 		public MainWindow()
 		{
 			InitializeComponent();
@@ -213,11 +218,13 @@ namespace SCYTChargeSystem
 			TotalSendNumTextblock.Text = nownum.ToString();
 			if(historynum != nownum)
 			{
+				MessageBox.Show(nownum.ToString());
 				using(Trans t = new Trans())
 				{
 					try
 					{
 						DoBussiness.UpdateTicketNum(t,nownum);
+						DoBussiness.UpdateSendNum(t);
 						t.Commit();
 					}
 					catch(Exception ex)
@@ -500,6 +507,7 @@ namespace SCYTChargeSystem
 									string state = "2";
 									int UID = Convert.ToInt32(dr["UID"].ToString());
 									DoBussiness.MainTicketStateChange(t,state,UID);
+									DoBussiness.UpdateExchangeNum(t);
 								}
 								t.Commit();
 								MessageBox.Show("领取成功");
@@ -656,6 +664,7 @@ namespace SCYTChargeSystem
 										string state = "2";
 										int UID = Convert.ToInt32(dr["UID"].ToString());
 										DoBussiness.MainTicketStateChange(t,state,UID);
+										DoBussiness.UpdateExchangeNum(t);
 									}
 									t.Commit();
 									MessageBox.Show("领取成功");
@@ -913,9 +922,38 @@ namespace SCYTChargeSystem
 								break;
 							}
 					}
+					ManageTicketDatagrid.ItemsSource = managedt.DefaultView;
 				}
+			}
+		}
 
-				ManageTicketDatagrid.ItemsSource = managedt.DefaultView;
+		private void QueryMoneyButton_Click(object sender,RoutedEventArgs e)
+		{
+			string startime = string.Empty;
+			string endtime = string.Empty;
+			if(QueryStartDatepicker.Text != null || QueryStartDatepicker.Text != "")
+			{
+				startime = QueryStartDatepicker.Text.Trim();
+			}
+			else
+			{
+				MessageBox.Show("请选择开始日期");
+				return;
+			}
+			if(QueryEndDatepicker.Text != null || QueryEndDatepicker.Text != "")
+			{
+				endtime = QueryEndDatepicker.Text.Trim();
+			}
+			else
+			{
+				MessageBox.Show("请选择结束日期");
+				return;
+			}
+			querydt = DoBussiness.TotalQuery(startime,endtime);
+
+			if(querydt != null)
+			{
+				QueryDatagrid.ItemsSource = querydt.DefaultView;
 			}
 		}
 	}

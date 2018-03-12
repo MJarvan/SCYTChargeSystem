@@ -47,9 +47,12 @@ namespace SCYTChargeSystem
 			DbHelper db = new DbHelper();
 			DateTime HistoryCreateDate = new DateTime();
 			HistoryCreateDate = Convert.ToDateTime(DateTime.Now.ToShortDateString());
-			DbCommand insert = db.GetSqlStringCommond("insert into Money values (@TotalMoney, @CreateDate,dateadd(hh,+6,Datename(year,GetDate())+'-'+Datename(month,GetDate())+'-'+Datename(day,GetDate())) ,DATEADD(day,1,dateadd(hh,+6,Datename(year,GetDate()) + '-' + Datename(month,GetDate()) + '-' + Datename(day,GetDate()))))");
+			DbCommand insert = db.GetSqlStringCommond("insert into Money values (@TotalMoney,@ConsumptionTime,@SendNum,@ExchangeNum, @CreateDate,dateadd(hh,+6,Datename(year,GetDate())+'-'+Datename(month,GetDate())+'-'+Datename(day,GetDate())) ,DATEADD(day,1,dateadd(hh,+6,Datename(year,GetDate()) + '-' + Datename(month,GetDate()) + '-' + Datename(day,GetDate()))))");
 
 			db.AddInParameter(insert,"@TotalMoney",DbType.Decimal,money);
+			db.AddInParameter(insert,"@ConsumptionTime",DbType.Int32,0);
+			db.AddInParameter(insert,"@SendNum",DbType.Int32,0);
+			db.AddInParameter(insert,"@ExchangeNum",DbType.Int32,0);
 			db.AddInParameter(insert,"@CreateDate",DbType.DateTime,HistoryCreateDate);
 
 			if(t == null)
@@ -65,9 +68,10 @@ namespace SCYTChargeSystem
 		public static void UpdateMoney(Trans t,decimal money)
 		{
 			DbHelper db = new DbHelper();
-			DbCommand update = db.GetSqlStringCommond("update Money set TotalMoney= TotalMoney + @TotalMoney");
+			DbCommand update = db.GetSqlStringCommond("update Money set TotalMoney = TotalMoney + @TotalMoney, ConsumptionTime = ConsumptionTime + @ConsumptionTime");
 
 			db.AddInParameter(update,"@TotalMoney",DbType.Decimal,money);
+			db.AddInParameter(update,"@ConsumptionTime",DbType.Int32,1);
 
 			if(t == null)
 			{
@@ -197,6 +201,53 @@ namespace SCYTChargeSystem
 			{
 				dt = db.ExecuteDataTable(selectmanage);
 			}
+			return dt;
+		}
+
+		public static void UpdateSendNum(Trans t)
+		{
+			DbHelper db = new DbHelper();
+			DbCommand update = db.GetSqlStringCommond("update Money set SendNum = SendNum + @SendNum");
+			db.AddInParameter(update,"@SendNum",DbType.Int32,1);
+
+			if(t == null)
+			{
+				db.ExecuteNonQuery(update);
+			}
+			else
+			{
+				db.ExecuteNonQuery(update,t);
+			}
+		}
+
+		public static void UpdateExchangeNum(Trans t)
+		{
+			DbHelper db = new DbHelper();
+			DbCommand update = db.GetSqlStringCommond("update Money set ExchangeNum = ExchangeNum + @ExchangeNum");
+			db.AddInParameter(update,"@ExchangeNum",DbType.Int32,1);
+
+			if(t == null)
+			{
+				db.ExecuteNonQuery(update);
+			}
+			else
+			{
+				db.ExecuteNonQuery(update,t);
+			}
+		}
+
+		public static DataTable TotalQuery(string startime,string endtime)
+		{
+			DataTable dt = null;
+			DbHelper db = new DbHelper();
+			DateTime StartTime = Convert.ToDateTime(startime);
+			DateTime EndTime = Convert.ToDateTime(endtime);
+			DbCommand query = db.GetSqlStringCommond("select * from Money where CreateDate between @StartTime and @EndTime");
+			db.AddInParameter(query,"@StartTime",DbType.Date,StartTime);
+			db.AddInParameter(query,"@EndTime",DbType.Date,EndTime);
+
+			dt = db.ExecuteDataTable(query);
+
 			return dt;
 		}
 	}
