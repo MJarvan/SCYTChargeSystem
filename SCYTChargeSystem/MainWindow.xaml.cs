@@ -24,7 +24,7 @@ namespace SCYTChargeSystem
 	/// </summary>
 	public partial class MainWindow:Window
 	{
-
+		#region 属性变量
 		/// <summary>
 		/// 应用程序路径
 		/// </summary>
@@ -58,7 +58,9 @@ namespace SCYTChargeSystem
 		/// <summary>
 		/// 统计页datatable
 		/// </summary>
-		DataTable querydt = new DataTable();
+		DataTable moneydt = new DataTable();
+
+		#endregion 属性变量
 
 		public MainWindow()
 		{
@@ -69,6 +71,10 @@ namespace SCYTChargeSystem
 		{
 			LoadLogic();
 			LoadMain();
+			AddManagePage();
+			InitManageComboBox();
+			AddMoneyPage();
+			InitMoneyComboBox();
 		}
 
 		#region 公式管理
@@ -570,6 +576,7 @@ namespace SCYTChargeSystem
 
 		#endregion 主页
 
+		#region 兑换券管理
 		/// <summary>
 		/// 管理页添加按钮
 		/// </summary>
@@ -642,9 +649,10 @@ namespace SCYTChargeSystem
 		/// <param name="e"></param>
 		private void ManageConfirmTicketButton_Click(object sender,RoutedEventArgs e)
 		{
-			if(managedt.Rows.Count > 0)
+			DataTable dt = (ManageTicketDatagrid.ItemsSource as DataView).ToTable();
+			if(dt.Rows.Count > 0)
 			{
-				DataRow[] drs = managedt.Select("IsSelected=True");
+				DataRow[] drs = dt.Select("IsSelected=True");
 				if(drs.Length == 0)
 				{
 					MessageBox.Show("请选择要操作的行");
@@ -698,9 +706,10 @@ namespace SCYTChargeSystem
 		/// <param name="e"></param>
 		private void ManageOverTicketButton_Click(object sender,RoutedEventArgs e)
 		{
-			if(managedt.Rows.Count > 0)
+			DataTable dt = (ManageTicketDatagrid.ItemsSource as DataView).ToTable();
+			if(dt.Rows.Count > 0)
 			{
-				DataRow[] drs = managedt.Select("IsSelected=True");
+				DataRow[] drs = dt.Select("IsSelected=True");
 				if(drs.Length == 0)
 				{
 					MessageBox.Show("请选择要操作的行");
@@ -746,9 +755,10 @@ namespace SCYTChargeSystem
 		/// <param name="e"></param>
 		private void ManageRequeueTicketButton_Click(object sender,RoutedEventArgs e)
 		{
-			if(managedt.Rows.Count > 0)
+			DataTable dt = (ManageTicketDatagrid.ItemsSource as DataView).ToTable();
+			if(dt.Rows.Count > 0)
 			{
-				DataRow[] drs = managedt.Select("IsSelected=True");
+				DataRow[] drs = dt.Select("IsSelected=True");
 				if(drs.Length == 0)
 				{
 					MessageBox.Show("请选择要操作的行");
@@ -787,6 +797,11 @@ namespace SCYTChargeSystem
 			}
 		}
 
+		/// <summary>
+		/// 兑换券删除
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void ManageDeleteTicketButton_Click(object sender,RoutedEventArgs e)
 		{
 			if(managedt.Rows.Count > 0)
@@ -851,7 +866,11 @@ namespace SCYTChargeSystem
 				MessageBox.Show("请先查询数据");
 			}
 		}
-
+		/// <summary>
+		/// 兑换券查询
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void QueryTicketButton_Click(object sender,RoutedEventArgs e)
 		{
 			string state = string.Empty;
@@ -922,11 +941,20 @@ namespace SCYTChargeSystem
 								break;
 							}
 					}
-					ManageTicketDatagrid.ItemsSource = managedt.DefaultView;
 				}
+				ManageTicketDatagrid.ItemsSource = managedt.DefaultView;
+				ComboBox comboBoxmanagePageNumber = GetChildObject<ComboBox>(this.managestackpanel,"comboBoxmanagePageNumber");
+				ManagePage(managedt,(int)comboBoxmanagePageNumber.SelectedValue,1);
 			}
 		}
+		#endregion 兑换券管理
 
+		#region 营业额管理
+		/// <summary>
+		/// 营业额查询
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void QueryMoneyButton_Click(object sender,RoutedEventArgs e)
 		{
 			string startime = string.Empty;
@@ -949,12 +977,828 @@ namespace SCYTChargeSystem
 				MessageBox.Show("请选择结束日期");
 				return;
 			}
-			querydt = DoBussiness.TotalQuery(startime,endtime);
+			moneydt = DoBussiness.TotalQuery(startime,endtime);
 
-			if(querydt != null)
+			if(moneydt != null)
 			{
-				QueryDatagrid.ItemsSource = querydt.DefaultView;
+				QueryDatagrid.ItemsSource = moneydt.DefaultView;
+				ComboBox comboBoxmoneyPageNumber = GetChildObject<ComboBox>(this.moneystackpanel,"comboBoxmoneyPageNumber");
+				MoneyPage(moneydt,(int)comboBoxmoneyPageNumber.SelectedValue,1);
 			}
+		}
+
+		#endregion 营业额管理
+
+		#region 兑换券分页
+
+		#region 添加分页控件
+
+		/// <summary>
+		/// 添加分页控件
+		/// </summary>
+		private void AddManagePage()
+		{
+
+			ComboBox combobox = new ComboBox();
+			combobox.Name = "comboBoxmanagePageNumber";
+			combobox.Width = double.NaN;
+			combobox.VerticalAlignment = VerticalAlignment.Center;
+			combobox.SelectionChanged += new SelectionChangedEventHandler(comboBoxmanagePageNumber_SelectionChanged);
+			managestackpanel.Children.Add(combobox);
+
+			Button button1 = new Button();
+			button1.Name = "buttonmanageHome";
+			button1.Content = "首页";
+			button1.VerticalAlignment = VerticalAlignment.Center;
+			button1.Margin = new Thickness(3,0,3,0);
+			button1.Click += new RoutedEventHandler(buttonmanageHome_Click);
+			managestackpanel.Children.Add(button1);
+
+			Button button2 = new Button();
+			button2.Name = "buttonmanageUp";
+			button2.Content = "上一页";
+			button2.VerticalAlignment = VerticalAlignment.Center;
+			button2.Margin = new Thickness(3,0,3,0);
+			button2.Click += new RoutedEventHandler(buttonmanageUp_Click);
+			managestackpanel.Children.Add(button2);
+
+			Button button3 = new Button();
+			button3.Name = "buttonmanageNext";
+			button3.Content = "下一页";
+			button3.VerticalAlignment = VerticalAlignment.Center;
+			button3.Margin = new Thickness(3,0,3,0);
+			button3.Click += new RoutedEventHandler(buttonmanageNext_Click);
+			managestackpanel.Children.Add(button3);
+
+			Button button4 = new Button();
+			button4.Name = "buttonmanageEnd";
+			button4.Content = "尾页";
+			button4.VerticalAlignment = VerticalAlignment.Center;
+			button4.Margin = new Thickness(3,0,3,0);
+			button4.Click += new RoutedEventHandler(buttonmanageEnd_Click);
+			managestackpanel.Children.Add(button4);
+
+			TextBlock textblock1 = new TextBlock();
+			textblock1.Text = "共";
+			textblock1.VerticalAlignment = VerticalAlignment.Center;
+			managestackpanel.Children.Add(textblock1);
+
+			TextBlock textblock2 = new TextBlock();
+			textblock2.Text = "0";
+			textblock2.Name = "textBlockmanageTotal";
+			textblock2.VerticalAlignment = VerticalAlignment.Center;
+			managestackpanel.Children.Add(textblock2);
+
+			TextBlock textblock3 = new TextBlock();
+			textblock3.Text = "条";
+			textblock3.VerticalAlignment = VerticalAlignment.Center;
+			textblock3.Margin = new Thickness(3,0,3,0);
+			managestackpanel.Children.Add(textblock3);
+
+			TextBlock textblock4 = new TextBlock();
+			textblock4.Text = "第";
+			textblock4.VerticalAlignment = VerticalAlignment.Center;
+			managestackpanel.Children.Add(textblock4);
+
+			TextBlock textblock5 = new TextBlock();
+			textblock5.Text = "0";
+			textblock5.VerticalAlignment = VerticalAlignment.Center;
+			textblock5.Name = "textBlockPage";
+			managestackpanel.Children.Add(textblock5);
+
+			TextBlock textblock6 = new TextBlock();
+			textblock6.Text = "页";
+			textblock6.VerticalAlignment = VerticalAlignment.Center;
+			textblock6.Margin = new Thickness(3,0,3,0);
+			managestackpanel.Children.Add(textblock6);
+
+			TextBlock textblock7 = new TextBlock();
+			textblock7.Text = "/";
+			textblock7.VerticalAlignment = VerticalAlignment.Center;
+			textblock7.Margin = new Thickness(3,0,3,0);
+			managestackpanel.Children.Add(textblock7);
+
+			TextBlock textblock8 = new TextBlock();
+			textblock8.Text = "共";
+			textblock8.VerticalAlignment = VerticalAlignment.Center;
+			managestackpanel.Children.Add(textblock8);
+
+			TextBlock textblock9 = new TextBlock();
+			textblock9.Text = "0";
+			textblock9.Name = "textBlockmanageTotalPage";
+			textblock9.VerticalAlignment = VerticalAlignment.Center;
+			managestackpanel.Children.Add(textblock9);
+
+			TextBlock textblock30 = new TextBlock();
+			textblock30.Text = "页";
+			textblock30.VerticalAlignment = VerticalAlignment.Center;
+			textblock30.Margin = new Thickness(3,0,3,0);
+			managestackpanel.Children.Add(textblock30);
+
+			TextBlock textblock10 = new TextBlock();
+			textblock10.Text = "转到";
+			textblock10.VerticalAlignment = VerticalAlignment.Center;
+			managestackpanel.Children.Add(textblock10);
+
+			TextBox textbox = new TextBox();
+			textbox.Name = "textBoxmanagePageNumber";
+			textbox.TextAlignment = TextAlignment.Center;
+			textbox.VerticalAlignment = VerticalAlignment.Center;
+			textbox.Width = 70;
+			textbox.TextChanged += new TextChangedEventHandler(textBoxmanagePageNumber_TextChanged);
+			managestackpanel.Children.Add(textbox);
+
+			TextBlock textblock20 = new TextBlock();
+			textblock20.Text = "页";
+			textblock20.VerticalAlignment = VerticalAlignment.Center;
+			managestackpanel.Children.Add(textblock20);
+
+			Button button5 = new Button();
+			button5.Name = "buttonmanageOK";
+			button5.Content = "GO";
+			button5.VerticalAlignment = VerticalAlignment.Center;
+			button5.Margin = new Thickness(3,0,3,0);
+			button5.Click += new RoutedEventHandler(buttonmanageOK_Click);
+			managestackpanel.Children.Add(button5);
+		}
+
+		#endregion 添加分页控件
+
+		/// <summary>
+		/// 主页按钮_单击事件
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void buttonmanageHome_Click(object sender,RoutedEventArgs e)
+		{
+			if(managedt != null)
+			{
+				//if (currentPage < totalPage)
+				{
+					ComboBox comboBoxmanagePageNumber = GetChildObject<ComboBox>(this.managestackpanel,"comboBoxmanagePageNumber");
+
+					ManagePage(managedt,(int)comboBoxmanagePageNumber.SelectedValue,1);
+				}
+			}
+		}
+
+		/// <summary>
+		/// 向上按钮_单击事件
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void buttonmanageUp_Click(object sender,RoutedEventArgs e)
+		{
+			TextBlock textBlockPage = GetChildObject<TextBlock>(this.managestackpanel,"textBlockPage");
+			int currentPage = int.Parse(textBlockPage.Text);
+			if(managedt != null)
+			{
+				if(currentPage > 1)
+				{
+					ComboBox comboBoxmanagePageNumber = GetChildObject<ComboBox>(this.managestackpanel,"comboBoxmanagePageNumber");
+					ManagePage(managedt,(int)comboBoxmanagePageNumber.SelectedValue,currentPage - 1);
+				}
+			}
+		}
+
+		/// <summary>
+		/// 下一个按钮_单击事件
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void buttonmanageNext_Click(object sender,RoutedEventArgs e)
+		{
+			TextBlock textBlockPage = GetChildObject<TextBlock>(this.managestackpanel,"textBlockPage");
+			int currentPage = int.Parse(textBlockPage.Text);
+			TextBlock textBlockmanageTotalPage = GetChildObject<TextBlock>(this.managestackpanel,"textBlockmanageTotalPage");
+			int totalPage = int.Parse(textBlockmanageTotalPage.Text);
+			if(managedt != null)
+			{
+				if(currentPage < totalPage)
+				{
+					ComboBox comboBoxmanagePageNumber = GetChildObject<ComboBox>(this.managestackpanel,"comboBoxmanagePageNumber");
+					ManagePage(managedt,(int)comboBoxmanagePageNumber.SelectedValue,currentPage + 1);
+				}
+			}
+		}
+
+		/// <summary>
+		///  结束按钮_单击事件
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void buttonmanageEnd_Click(object sender,RoutedEventArgs e)
+		{
+			TextBlock textBlockmanageTotalPage = GetChildObject<TextBlock>(this.managestackpanel,"textBlockmanageTotalPage");
+			int totalPage = int.Parse(textBlockmanageTotalPage.Text);
+			if(managedt != null)
+			{
+				//if (currentPage < totalPage)
+				{
+					ComboBox comboBoxmanagePageNumber = GetChildObject<ComboBox>(this.managestackpanel,"comboBoxmanagePageNumber");
+					ManagePage(managedt,(int)comboBoxmanagePageNumber.SelectedValue,totalPage);
+				}
+			}
+		}
+
+		/// <summary>
+		/// 完成按钮_单击事件
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void buttonmanageOK_Click(object sender,RoutedEventArgs e)
+		{
+			if(managedt != null)
+			{
+				ComboBox comboBoxmanagePageNumber = GetChildObject<ComboBox>(this.managestackpanel,"comboBoxmanagePageNumber");
+				TextBox textBoxmanagePageNumber = GetChildObject<TextBox>(this.managestackpanel,"textBoxmanagePageNumber");
+				ManagePage(managedt,(int)comboBoxmanagePageNumber.SelectedValue,int.Parse(textBoxmanagePageNumber.Text));
+			}
+		}
+
+		/// <summary>
+		/// 显示页面条数
+		/// </summary>
+		/// <param name="pageNumber">当前页显示的条数</param>
+		/// <param name="currentPage">当前页</param>
+		private DataTable ManagePage(DataTable dt,int pageNumber,int currentPage)
+		{
+			DataTable dataTablePage = new DataTable();
+			dataTablePage = dt.Clone();
+			int total = dt.Rows.Count;
+
+			int totalPage = 0;//总页数
+			if(total % pageNumber == 0)
+			{
+				totalPage = total / pageNumber;
+			}
+			else
+			{
+				totalPage = total / pageNumber + 1;
+			}
+
+			int first = pageNumber * (currentPage - 1);//当前记录是多少条
+			first = (first > 0) ? first : 0;
+			//如果总数量大于每页显示数量  
+			if(total >= pageNumber * currentPage)
+			{
+				for(int i = first;i < pageNumber * currentPage;i++)
+					dataTablePage.ImportRow(dt.Rows[i]);
+			}
+			else
+			{
+				for(int i = first;i < dt.Rows.Count;i++)
+					dataTablePage.ImportRow(dt.Rows[i]);
+			}
+
+			this.ManageTicketDatagrid.ItemsSource = dataTablePage.DefaultView;
+			//	tmpTable.Dispose();
+			TextBlock textBlockmanageTotal = GetChildObject<TextBlock>(this.managestackpanel,"textBlockmanageTotal");
+			TextBlock textBlockmanageTotalPage = GetChildObject<TextBlock>(this.managestackpanel,"textBlockmanageTotalPage");
+			TextBlock textBlockPage = GetChildObject<TextBlock>(this.managestackpanel,"textBlockPage");
+
+			textBlockmanageTotal.Text = total.ToString();
+			textBlockmanageTotalPage.Text = totalPage.ToString();
+			textBlockPage.Text = currentPage.ToString();
+
+			ManageButonStatus(currentPage,totalPage);
+			return dataTablePage;
+		}
+
+		/// <summary>
+		/// 按钮状态
+		/// </summary>
+		/// <param name="currentPage">当前页</param>
+		/// <param name="totalPage">总页数</param>
+		private void ManageButonStatus(int currentPage,int totalPage)
+		{
+			Button buttonmanageHome = GetChildObject<Button>(this.managestackpanel,"buttonmanageHome");
+			Button buttonmanageUp = GetChildObject<Button>(this.managestackpanel,"buttonmanageUp");
+			Button buttonmanageEnd = GetChildObject<Button>(this.managestackpanel,"buttonmanageEnd");
+			Button buttonmanageNext = GetChildObject<Button>(this.managestackpanel,"buttonmanageNext");
+
+			if(currentPage == 1)
+			{
+				buttonmanageHome.IsEnabled = false;
+				buttonmanageUp.IsEnabled = false;
+			}
+			else
+			{
+				buttonmanageHome.IsEnabled = true;
+				buttonmanageUp.IsEnabled = true;
+			}
+
+			if(currentPage == totalPage)
+			{
+				buttonmanageEnd.IsEnabled = false;
+				buttonmanageNext.IsEnabled = false;
+			}
+			else
+			{
+				buttonmanageEnd.IsEnabled = true;
+				buttonmanageNext.IsEnabled = true;
+			}
+		}
+
+		/// <summary>
+		/// 组合框页码_选择已更改事件
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void comboBoxmanagePageNumber_SelectionChanged(object sender,SelectionChangedEventArgs e)
+		{
+			if(managedt != null)
+			{
+				ComboBox comboBoxmanagePageNumber = GetChildObject<ComboBox>(this.managestackpanel,"comboBoxmanagePageNumber");
+				TextBox textBoxmanagePageNumber = GetChildObject<TextBox>(this.managestackpanel,"textBoxmanagePageNumber");
+				ManagePage(managedt,(int)comboBoxmanagePageNumber.SelectedValue,1);
+				textBoxmanagePageNumber.Text = "";
+			}
+		}
+
+		/// <summary>
+		/// 初始化组合框
+		/// </summary>
+		private void InitManageComboBox()
+		{
+			ComboBox comboBoxmanagePageNumber = GetChildObject<ComboBox>(this.managestackpanel,"comboBoxmanagePageNumber");
+
+			Dictionary<int,string> dicComboBox = new Dictionary<int,string>()
+			{
+				{5,"每页显示5条"},
+				{10,"每页显示10条"},
+				{20,"每页显示20条"},
+				{50,"每页显示50条"}
+			};
+
+			comboBoxmanagePageNumber.ItemsSource = null;
+			comboBoxmanagePageNumber.SelectedValuePath = "Key";
+			comboBoxmanagePageNumber.DisplayMemberPath = "Value";
+			comboBoxmanagePageNumber.ItemsSource = dicComboBox;
+
+			comboBoxmanagePageNumber.SelectedIndex = 1;
+		}
+
+		/// <summary>
+		/// 文本框页码_文本已更改事件
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void textBoxmanagePageNumber_TextChanged(object sender,TextChangedEventArgs e)
+		{
+			string strNumber = string.Empty;
+			TextBox textBoxmanagePageNumber = GetChildObject<TextBox>(this.managestackpanel,"textBoxmanagePageNumber");
+			TextBlock textBlockmanageTotalPage = GetChildObject<TextBlock>(this.managestackpanel,"textBlockmanageTotalPage");
+
+			foreach(char charText in textBoxmanagePageNumber.Text.Trim())
+			{
+				int intOut = 0;
+				if(Int32.TryParse(charText.ToString(),out intOut))
+				{
+					strNumber = strNumber + charText.ToString();
+				}
+			}
+
+			if(strNumber != string.Empty)
+			{
+				if(Convert.ToDecimal(strNumber) > Convert.ToDecimal(textBlockmanageTotalPage.Text))
+				{
+					strNumber = textBlockmanageTotalPage.Text;
+				}
+				if(Convert.ToDecimal(strNumber) < 1)
+				{
+					strNumber = "1";
+				}
+			}
+			else
+			{
+				strNumber = "1";
+			}
+
+			textBoxmanagePageNumber.Text = strNumber;
+		}
+
+		#endregion 分页
+
+		#region 营业额分页
+
+		#region 添加分页控件
+
+		/// <summary>
+		/// 添加分页控件
+		/// </summary>
+		private void AddMoneyPage()
+		{
+
+			ComboBox combobox = new ComboBox();
+			combobox.Name = "comboBoxmoneyPageNumber";
+			combobox.Width = double.NaN;
+			combobox.VerticalAlignment = VerticalAlignment.Center;
+			combobox.SelectionChanged += new SelectionChangedEventHandler(comboBoxmoneyPageNumber_SelectionChanged);
+			moneystackpanel.Children.Add(combobox);
+
+			Button button1 = new Button();
+			button1.Name = "buttonmoneyHome";
+			button1.Content = "首页";
+			button1.VerticalAlignment = VerticalAlignment.Center;
+			button1.Margin = new Thickness(3,0,3,0);
+			button1.Click += new RoutedEventHandler(buttonmoneyHome_Click);
+			moneystackpanel.Children.Add(button1);
+
+			Button button2 = new Button();
+			button2.Name = "buttonmoneyUp";
+			button2.Content = "上一页";
+			button2.VerticalAlignment = VerticalAlignment.Center;
+			button2.Margin = new Thickness(3,0,3,0);
+			button2.Click += new RoutedEventHandler(buttonmoneyUp_Click);
+			moneystackpanel.Children.Add(button2);
+
+			Button button3 = new Button();
+			button3.Name = "buttonmoneyNext";
+			button3.Content = "下一页";
+			button3.VerticalAlignment = VerticalAlignment.Center;
+			button3.Margin = new Thickness(3,0,3,0);
+			button3.Click += new RoutedEventHandler(buttonmoneyNext_Click);
+			moneystackpanel.Children.Add(button3);
+
+			Button button4 = new Button();
+			button4.Name = "buttonmoneyEnd";
+			button4.Content = "尾页";
+			button4.VerticalAlignment = VerticalAlignment.Center;
+			button4.Margin = new Thickness(3,0,3,0);
+			button4.Click += new RoutedEventHandler(buttonmoneyEnd_Click);
+			moneystackpanel.Children.Add(button4);
+
+			TextBlock textblock1 = new TextBlock();
+			textblock1.Text = "共";
+			textblock1.VerticalAlignment = VerticalAlignment.Center;
+			moneystackpanel.Children.Add(textblock1);
+
+			TextBlock textblock2 = new TextBlock();
+			textblock2.Text = "0";
+			textblock2.Name = "textBlockmoneyTotal";
+			textblock2.VerticalAlignment = VerticalAlignment.Center;
+			moneystackpanel.Children.Add(textblock2);
+
+			TextBlock textblock3 = new TextBlock();
+			textblock3.Text = "条";
+			textblock3.VerticalAlignment = VerticalAlignment.Center;
+			textblock3.Margin = new Thickness(3,0,3,0);
+			moneystackpanel.Children.Add(textblock3);
+
+			TextBlock textblock4 = new TextBlock();
+			textblock4.Text = "第";
+			textblock4.VerticalAlignment = VerticalAlignment.Center;
+			moneystackpanel.Children.Add(textblock4);
+
+			TextBlock textblock5 = new TextBlock();
+			textblock5.Text = "0";
+			textblock5.VerticalAlignment = VerticalAlignment.Center;
+			textblock5.Name = "textBlockPage";
+			moneystackpanel.Children.Add(textblock5);
+
+			TextBlock textblock6 = new TextBlock();
+			textblock6.Text = "页";
+			textblock6.VerticalAlignment = VerticalAlignment.Center;
+			textblock6.Margin = new Thickness(3,0,3,0);
+			moneystackpanel.Children.Add(textblock6);
+
+			TextBlock textblock7 = new TextBlock();
+			textblock7.Text = "/";
+			textblock7.VerticalAlignment = VerticalAlignment.Center;
+			textblock7.Margin = new Thickness(3,0,3,0);
+			moneystackpanel.Children.Add(textblock7);
+
+			TextBlock textblock8 = new TextBlock();
+			textblock8.Text = "共";
+			textblock8.VerticalAlignment = VerticalAlignment.Center;
+			moneystackpanel.Children.Add(textblock8);
+
+			TextBlock textblock9 = new TextBlock();
+			textblock9.Text = "0";
+			textblock9.Name = "textBlockmoneyTotalPage";
+			textblock9.VerticalAlignment = VerticalAlignment.Center;
+			moneystackpanel.Children.Add(textblock9);
+
+			TextBlock textblock30 = new TextBlock();
+			textblock30.Text = "页";
+			textblock30.VerticalAlignment = VerticalAlignment.Center;
+			textblock30.Margin = new Thickness(3,0,3,0);
+			moneystackpanel.Children.Add(textblock30);
+
+			TextBlock textblock10 = new TextBlock();
+			textblock10.Text = "转到";
+			textblock10.VerticalAlignment = VerticalAlignment.Center;
+			moneystackpanel.Children.Add(textblock10);
+
+			TextBox textbox = new TextBox();
+			textbox.Name = "textBoxmoneyPageNumber";
+			textbox.TextAlignment = TextAlignment.Center;
+			textbox.VerticalAlignment = VerticalAlignment.Center;
+			textbox.Width = 70;
+			textbox.TextChanged += new TextChangedEventHandler(textBoxmoneyPageNumber_TextChanged);
+			moneystackpanel.Children.Add(textbox);
+
+			TextBlock textblock20 = new TextBlock();
+			textblock20.Text = "页";
+			textblock20.VerticalAlignment = VerticalAlignment.Center;
+			moneystackpanel.Children.Add(textblock20);
+
+			Button button5 = new Button();
+			button5.Name = "buttonmoneyOK";
+			button5.Content = "GO";
+			button5.VerticalAlignment = VerticalAlignment.Center;
+			button5.Margin = new Thickness(3,0,3,0);
+			button5.Click += new RoutedEventHandler(buttonmoneyOK_Click);
+			moneystackpanel.Children.Add(button5);
+		}
+
+		#endregion 添加分页控件
+
+		/// <summary>
+		/// 主页按钮_单击事件
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void buttonmoneyHome_Click(object sender,RoutedEventArgs e)
+		{
+			if(moneydt != null)
+			{
+				//if (currentPage < totalPage)
+				{
+					ComboBox comboBoxmoneyPageNumber = GetChildObject<ComboBox>(this.moneystackpanel,"comboBoxmoneyPageNumber");
+
+					MoneyPage(moneydt,(int)comboBoxmoneyPageNumber.SelectedValue,1);
+				}
+			}
+		}
+
+		/// <summary>
+		/// 向上按钮_单击事件
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void buttonmoneyUp_Click(object sender,RoutedEventArgs e)
+		{
+			TextBlock textBlockPage = GetChildObject<TextBlock>(this.moneystackpanel,"textBlockPage");
+			int currentPage = int.Parse(textBlockPage.Text);
+			if(moneydt != null)
+			{
+				if(currentPage > 1)
+				{
+					ComboBox comboBoxmoneyPageNumber = GetChildObject<ComboBox>(this.moneystackpanel,"comboBoxmoneyPageNumber");
+					MoneyPage(moneydt,(int)comboBoxmoneyPageNumber.SelectedValue,currentPage - 1);
+				}
+			}
+		}
+
+		/// <summary>
+		/// 下一个按钮_单击事件
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void buttonmoneyNext_Click(object sender,RoutedEventArgs e)
+		{
+			TextBlock textBlockPage = GetChildObject<TextBlock>(this.moneystackpanel,"textBlockPage");
+			int currentPage = int.Parse(textBlockPage.Text);
+			TextBlock textBlockmoneyTotalPage = GetChildObject<TextBlock>(this.moneystackpanel,"textBlockmoneyTotalPage");
+			int totalPage = int.Parse(textBlockmoneyTotalPage.Text);
+			if(moneydt != null)
+			{
+				if(currentPage < totalPage)
+				{
+					ComboBox comboBoxmoneyPageNumber = GetChildObject<ComboBox>(this.moneystackpanel,"comboBoxmoneyPageNumber");
+					MoneyPage(moneydt,(int)comboBoxmoneyPageNumber.SelectedValue,currentPage + 1);
+				}
+			}
+		}
+
+		/// <summary>
+		///  结束按钮_单击事件
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void buttonmoneyEnd_Click(object sender,RoutedEventArgs e)
+		{
+			TextBlock textBlockmoneyTotalPage = GetChildObject<TextBlock>(this.moneystackpanel,"textBlockmoneyTotalPage");
+			int totalPage = int.Parse(textBlockmoneyTotalPage.Text);
+			if(moneydt != null)
+			{
+				//if (currentPage < totalPage)
+				{
+					ComboBox comboBoxmoneyPageNumber = GetChildObject<ComboBox>(this.moneystackpanel,"comboBoxmoneyPageNumber");
+					MoneyPage(moneydt,(int)comboBoxmoneyPageNumber.SelectedValue,totalPage);
+				}
+			}
+		}
+
+		/// <summary>
+		/// 完成按钮_单击事件
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void buttonmoneyOK_Click(object sender,RoutedEventArgs e)
+		{
+			if(moneydt != null)
+			{
+				ComboBox comboBoxmoneyPageNumber = GetChildObject<ComboBox>(this.moneystackpanel,"comboBoxmoneyPageNumber");
+				TextBox textBoxmoneyPageNumber = GetChildObject<TextBox>(this.moneystackpanel,"textBoxmoneyPageNumber");
+				MoneyPage(moneydt,(int)comboBoxmoneyPageNumber.SelectedValue,int.Parse(textBoxmoneyPageNumber.Text));
+			}
+		}
+
+		/// <summary>
+		/// 显示页面条数
+		/// </summary>
+		/// <param name="pageNumber">当前页显示的条数</param>
+		/// <param name="currentPage">当前页</param>
+		private DataTable MoneyPage(DataTable dt,int pageNumber,int currentPage)
+		{
+			DataTable dataTablePage = new DataTable();
+			dataTablePage = dt.Clone();
+			int total = dt.Rows.Count;
+
+			int totalPage = 0;//总页数
+			if(total % pageNumber == 0)
+			{
+				totalPage = total / pageNumber;
+			}
+			else
+			{
+				totalPage = total / pageNumber + 1;
+			}
+
+			int first = pageNumber * (currentPage - 1);//当前记录是多少条
+			first = (first > 0) ? first : 0;
+			//如果总数量大于每页显示数量  
+			if(total >= pageNumber * currentPage)
+			{
+				for(int i = first;i < pageNumber * currentPage;i++)
+					dataTablePage.ImportRow(dt.Rows[i]);
+			}
+			else
+			{
+				for(int i = first;i < dt.Rows.Count;i++)
+					dataTablePage.ImportRow(dt.Rows[i]);
+			}
+
+			this.QueryDatagrid.ItemsSource = dataTablePage.DefaultView;
+			//	tmpTable.Dispose();
+			TextBlock textBlockmoneyTotal = GetChildObject<TextBlock>(this.moneystackpanel,"textBlockmoneyTotal");
+			TextBlock textBlockmoneyTotalPage = GetChildObject<TextBlock>(this.moneystackpanel,"textBlockmoneyTotalPage");
+			TextBlock textBlockPage = GetChildObject<TextBlock>(this.moneystackpanel,"textBlockPage");
+
+			textBlockmoneyTotal.Text = total.ToString();
+			textBlockmoneyTotalPage.Text = totalPage.ToString();
+			textBlockPage.Text = currentPage.ToString();
+
+			MoneyButonStatus(currentPage,totalPage);
+			return dataTablePage;
+		}
+
+		/// <summary>
+		/// 按钮状态
+		/// </summary>
+		/// <param name="currentPage">当前页</param>
+		/// <param name="totalPage">总页数</param>
+		private void MoneyButonStatus(int currentPage,int totalPage)
+		{
+			Button buttonmoneyHome = GetChildObject<Button>(this.moneystackpanel,"buttonmoneyHome");
+			Button buttonmoneyUp = GetChildObject<Button>(this.moneystackpanel,"buttonmoneyUp");
+			Button buttonmoneyEnd = GetChildObject<Button>(this.moneystackpanel,"buttonmoneyEnd");
+			Button buttonmoneyNext = GetChildObject<Button>(this.moneystackpanel,"buttonmoneyNext");
+
+			if(currentPage == 1)
+			{
+				buttonmoneyHome.IsEnabled = false;
+				buttonmoneyUp.IsEnabled = false;
+			}
+			else
+			{
+				buttonmoneyHome.IsEnabled = true;
+				buttonmoneyUp.IsEnabled = true;
+			}
+
+			if(currentPage == totalPage)
+			{
+				buttonmoneyEnd.IsEnabled = false;
+				buttonmoneyNext.IsEnabled = false;
+			}
+			else
+			{
+				buttonmoneyEnd.IsEnabled = true;
+				buttonmoneyNext.IsEnabled = true;
+			}
+		}
+
+		/// <summary>
+		/// 组合框页码_选择已更改事件
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void comboBoxmoneyPageNumber_SelectionChanged(object sender,SelectionChangedEventArgs e)
+		{
+			if(moneydt != null)
+			{
+				ComboBox comboBoxmoneyPageNumber = GetChildObject<ComboBox>(this.moneystackpanel,"comboBoxmoneyPageNumber");
+				TextBox textBoxmoneyPageNumber = GetChildObject<TextBox>(this.moneystackpanel,"textBoxmoneyPageNumber");
+				MoneyPage(moneydt,(int)comboBoxmoneyPageNumber.SelectedValue,1);
+				textBoxmoneyPageNumber.Text = "";
+			}
+		}
+
+		/// <summary>
+		/// 初始化组合框
+		/// </summary>
+		private void InitMoneyComboBox()
+		{
+			ComboBox comboBoxmoneyPageNumber = GetChildObject<ComboBox>(this.moneystackpanel,"comboBoxmoneyPageNumber");
+
+			Dictionary<int,string> dicComboBox = new Dictionary<int,string>()
+			{
+				{5,"每页显示5条"},
+				{10,"每页显示10条"},
+				{20,"每页显示20条"},
+				{50,"每页显示50条"}
+			};
+
+			comboBoxmoneyPageNumber.ItemsSource = null;
+			comboBoxmoneyPageNumber.SelectedValuePath = "Key";
+			comboBoxmoneyPageNumber.DisplayMemberPath = "Value";
+			comboBoxmoneyPageNumber.ItemsSource = dicComboBox;
+
+			comboBoxmoneyPageNumber.SelectedIndex = 1;
+		}
+
+		/// <summary>
+		/// 文本框页码_文本已更改事件
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void textBoxmoneyPageNumber_TextChanged(object sender,TextChangedEventArgs e)
+		{
+			string strNumber = string.Empty;
+			TextBox textBoxmoneyPageNumber = GetChildObject<TextBox>(this.moneystackpanel,"textBoxmoneyPageNumber");
+			TextBlock textBlockmoneyTotalPage = GetChildObject<TextBlock>(this.moneystackpanel,"textBlockmoneyTotalPage");
+
+			foreach(char charText in textBoxmoneyPageNumber.Text.Trim())
+			{
+				int intOut = 0;
+				if(Int32.TryParse(charText.ToString(),out intOut))
+				{
+					strNumber = strNumber + charText.ToString();
+				}
+			}
+
+			if(strNumber != string.Empty)
+			{
+				if(Convert.ToDecimal(strNumber) > Convert.ToDecimal(textBlockmoneyTotalPage.Text))
+				{
+					strNumber = textBlockmoneyTotalPage.Text;
+				}
+				if(Convert.ToDecimal(strNumber) < 1)
+				{
+					strNumber = "1";
+				}
+			}
+			else
+			{
+				strNumber = "1";
+			}
+
+			textBoxmoneyPageNumber.Text = strNumber;
+		}
+
+		#endregion 分页
+
+		/// <summary>
+		/// 根据控件名获取控件
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="obj"></param>
+		/// <param name="name"></param>
+		/// <returns></returns>
+		public T GetChildObject<T>(DependencyObject obj,string name) where T : FrameworkElement
+		{
+			DependencyObject child = null;
+			T grandChild = null;
+
+			for(int i = 0;i <= VisualTreeHelper.GetChildrenCount(obj) - 1;i++)
+			{
+				child = VisualTreeHelper.GetChild(obj,i);
+
+				if(child is T && (((T)child).Name == name | string.IsNullOrEmpty(name)))
+				{
+					return (T)child;
+				}
+				else
+				{
+					grandChild = GetChildObject<T>(child,name);
+					if(grandChild != null)
+						return grandChild;
+				}
+			}
+			return null;
 		}
 	}
 }

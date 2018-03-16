@@ -117,6 +117,7 @@
 						<RowDefinition Height="2*"></RowDefinition>
 						<RowDefinition Height="*"></RowDefinition>
 						<RowDefinition Height="8*"></RowDefinition>
+						<RowDefinition Height="*"></RowDefinition>
 					</Grid.RowDefinitions>
 					<!--兑换券管理第一列(兑换券添加信息)-->
 					<WrapPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
@@ -177,13 +178,17 @@
 							<DataGridTextColumn Header="操作时间" IsReadOnly="True" Binding="{Binding Path=UseDate,StringFormat='yyyy-MM-dd HH:mm:ss'}" Width ="*"/>
 						</DataGrid.Columns>
 					</DataGrid>
+					<StackPanel Name="managestackpanel" Orientation="Horizontal" Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Center">
+
+					</StackPanel>
 				</Grid>
 			</TabItem>
 			<TabItem Height="50" Header="营业额管理">
 				<Grid>
 					<Grid.RowDefinitions>
+						<RowDefinition Height="2*"></RowDefinition>
+						<RowDefinition Height="8*"></RowDefinition>
 						<RowDefinition Height="*"></RowDefinition>
-						<RowDefinition Height="3*"></RowDefinition>
 					</Grid.RowDefinitions>
 					<!--营业额管理第一列(查询条件)-->
 					<WrapPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left">
@@ -207,6 +212,9 @@
 							<DataGridTextColumn Header="兑换数" IsReadOnly="True" Binding="{Binding Path=ExchangeNum}" Width ="*"/>
 						</DataGrid.Columns>
 					</DataGrid>
+					<StackPanel Name="moneystackpanel" Orientation="Horizontal" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center">
+
+					</StackPanel>
 				</Grid>
 			</TabItem>
 			<TabItem Height="50" Header="公式管理">
