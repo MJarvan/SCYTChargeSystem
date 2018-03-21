@@ -65,10 +65,28 @@ namespace SCYTChargeSystem
 			}
 		}
 
-		public static void UpdateMoney(Trans t,decimal money)
+		public static void UpdateMoneyAdd(Trans t,decimal money)
 		{
 			DbHelper db = new DbHelper();
 			DbCommand update = db.GetSqlStringCommond("update Money set TotalMoney = TotalMoney + @TotalMoney, ConsumptionTime = ConsumptionTime + @ConsumptionTime where StartTime = dateadd(hh,+6,Datename(year,GetDate())+'-'+Datename(month,GetDate())+'-'+Datename(day,GetDate()))");
+
+			db.AddInParameter(update,"@TotalMoney",DbType.Decimal,money);
+			db.AddInParameter(update,"@ConsumptionTime",DbType.Int32,1);
+
+			if(t == null)
+			{
+				db.ExecuteNonQuery(update);
+			}
+			else
+			{
+				db.ExecuteNonQuery(update,t);
+			}
+		}
+
+		public static void UpdateMoneyDelete(Trans t,decimal money)
+		{
+			DbHelper db = new DbHelper();
+			DbCommand update = db.GetSqlStringCommond("update Money set TotalMoney = TotalMoney - @TotalMoney, ConsumptionTime = ConsumptionTime - @ConsumptionTime where StartTime = dateadd(hh,+6,Datename(year,GetDate())+'-'+Datename(month,GetDate())+'-'+Datename(day,GetDate()))");
 
 			db.AddInParameter(update,"@TotalMoney",DbType.Decimal,money);
 			db.AddInParameter(update,"@ConsumptionTime",DbType.Int32,1);

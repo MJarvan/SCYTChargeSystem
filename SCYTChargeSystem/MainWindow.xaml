@@ -147,6 +147,7 @@
 								<ComboBoxItem Content="未领取" Tag="1"></ComboBoxItem>
 								<ComboBoxItem Content="已领取" Tag="2"></ComboBoxItem>
 								<ComboBoxItem Content="作废" Tag="3"></ComboBoxItem>
+								<ComboBoxItem Content="全部" Tag="4"></ComboBoxItem>
 							</ComboBox>
 							<DatePicker Width="100" Margin="5" Name="QueryTicketDatepicker"></DatePicker>
 							<TextBox Width="100" Margin="5" Name="QueryTicketNoTextbox"></TextBox>
@@ -158,7 +159,7 @@
 							<Button Width="80" Margin="5" Name="ManageConfirmTicketButton" Click="ManageConfirmTicketButton_Click">领取</Button>
 							<Button Width="80" Margin="5" Name="ManageOverTicketButton" Click="ManageOverTicketButton_Click">过号</Button>
 							<Button Width="80" Margin="5" Name="ManageRequeueTicketButton" Click="ManageRequeueTicketButton_Click">重新排队</Button>
-							<Button Width="80" Margin="5" Name="ManageDeleteTicketButton" Click="ManageDeleteTicketButton_Click">删除</Button>
+							<Button Width="80" Margin="5" Name="ManageDeleteTicketButton" Click="ManageDeleteTicketButton_Click">作废</Button>
 						</WrapPanel>
 					</WrapPanel>
 					<DataGrid Margin="10,0,0,0" Grid.Row="3" Name="ManageTicketDatagrid" Width="Auto" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="True" SelectionUnit="FullRow" ScrollViewer.VerticalScrollBarVisibility="Visible">
