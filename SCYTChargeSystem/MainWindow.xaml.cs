@@ -249,42 +249,35 @@ namespace SCYTChargeSystem
 
 			//获取营业额
 			LoadMoney();
-			
+
 
 			//获取其他信息
+			DbCommand selecthistory = db.GetSqlStringCommond("select * from TicketNum");
+			int historynum = (int)db.ExecuteScalar(selecthistory);
+			//if(historynum != nownum)
+			//{
+			//	using(Trans t = new Trans())
+			//	{
+			//		try
+			//		{
+			//			DoBussiness.UpdateTicketNum(t,nownum);
+			//			t.Commit();
+			//		}
+			//		catch(Exception ex)
+			//		{
+			//			MessageBox.Show(ex.Message + " ,更新可兑换券信息失败,请联系管理员");
+			//			t.RollBack();
+			//		}
+			//	}
+			//}
 			DbCommand SendTicketNummain = db.GetSqlStringCommond("select * from Ticket where UseDate between dateadd(hh,+6,Datename(year,GetDate())+'-'+Datename(month,GetDate())+'-'+Datename(day,GetDate()))and DATEADD(day,1,dateadd(hh,+6,Datename(year,GetDate()) + '-' + Datename(month,GetDate()) + '-' + Datename(day,GetDate()))) and state = 2");
 			DataTable SendTicketNum = db.ExecuteDataTable(SendTicketNummain);
 			SendNumTextblock.Text = SendTicketNum.Rows.Count.ToString();
 			DataTable dt = DoBussiness.ManageQuery("1",DateTime.Now.ToShortDateString(),string.Empty);
 			TotalSendNumTextblock.Text = dt.Rows.Count.ToString();
-			UpdateTicketNum();
+			RemainNumTextblock.Text = (historynum - Convert.ToInt32(SendNumTextblock.Text)).ToString();
 		}
 
-		private void UpdateTicketNum()
-		{
-			DbHelper db = new DbHelper();
-			DbCommand selecthistory = db.GetSqlStringCommond("select * from TicketNum");
-			int historynum = (int)db.ExecuteScalar(selecthistory);
-			int nownum = (int)(Convert.ToDecimal(TotalMoneyTextblock.Text) / Convert.ToInt32(LogicTotalMoneyTextbox.Text)) + historynum;
-			if(historynum != nownum)
-			{
-				MessageBox.Show(nownum.ToString());
-				using(Trans t = new Trans())
-				{
-					try
-					{
-						DoBussiness.UpdateTicketNum(t,nownum);
-						t.Commit();
-					}
-					catch(Exception ex)
-					{
-						MessageBox.Show(ex.Message + " ,更新可兑换券信息失败,请联系管理员");
-						t.RollBack();
-					}
-				}
-			}
-			RemainNumTextblock.Text = (nownum - Convert.ToInt32(SendNumTextblock.Text)).ToString();
-		}
 
 		/// <summary>
 		/// 获取营业额
@@ -361,7 +354,10 @@ namespace SCYTChargeSystem
 			if(MainAddPhoneNumberTextbox.Text != null && MainAddPhoneNumberTextbox.Text != "" && MainAddMoneyTextbox.Text != null && MainAddMoneyTextbox.Text != "")
 			{
 				int AddNum = Convert.ToInt32(MainReceiveTicketTextblock.Text);
-				decimal logicmonty = Convert.ToDecimal(LogicCostMoneyTextbox.Text);
+				decimal oldmoney = Convert.ToDecimal(TotalMoneyTextblock.Text);
+				decimal logicmoney = Convert.ToDecimal(LogicTotalMoneyTextbox.Text);
+				decimal logiccostmoney = Convert.ToDecimal(LogicCostMoneyTextbox.Text);
+				int oldticketnum = (int)(oldmoney / logicmoney);
 				if(AddNum >= 1)
 				{
 					string copyTicketNo = MainAddTicketNoTextblock.Text;
@@ -376,18 +372,28 @@ namespace SCYTChargeSystem
 								string no = MainAddTicketNoTextblock.Text;
 								if(i == AddNum - 1)
 								{
-									decimal smallchange = money % logicmonty;
-									DoBussiness.AddTicket(t,no,phone,logicmonty + smallchange);
+									decimal smallchange = money % logiccostmoney;
+									DoBussiness.AddTicket(t,no,phone,logiccostmoney + smallchange);
 								}
 								else
 								{
-									DoBussiness.AddTicket(t,no,phone,logicmonty);
+									DoBussiness.AddTicket(t,no,phone,logiccostmoney);
 								}
-								DoBussiness.UpdateSendNum(t);
+								DoBussiness.UpdateSendNumAdd(t);
 								TicketNoIncrease(MainAddTicketNoTextblock.Text.Remove(0,LogicTicketNoTextbox.Text.Length));
 							}
 							DoBussiness.UpdateMoneyAdd(t,money);
 							t.Commit();
+							LoadMoney();
+							decimal newmoney = Convert.ToDecimal(TotalMoneyTextblock.Text);
+							int newticketnum = (int)(newmoney / logicmoney);
+							if(oldticketnum != newticketnum)
+							{
+								DbHelper db = new DbHelper();
+								DbCommand selecthistory = db.GetSqlStringCommond("select * from TicketNum");
+								int historynum = (int)db.ExecuteScalar(selecthistory);
+								DoBussiness.UpdateTicketNum(null,historynum + (newticketnum - oldticketnum));
+							}
 							MessageBox.Show("添加成功");
 							LoadMain();
 						}
@@ -638,8 +644,11 @@ namespace SCYTChargeSystem
 		{
 			if(ManageAddPhoneNumberTextbox.Text != null && ManageAddPhoneNumberTextbox.Text != "" && ManageAddMoneyTextbox.Text != null && ManageAddMoneyTextbox.Text != "")
 			{
-				int AddNum = Convert.ToInt32(ManageReceiveTicketTextblock.Text);
-				decimal logicmonty = Convert.ToDecimal(LogicCostMoneyTextbox.Text);
+				int AddNum = Convert.ToInt32(MainReceiveTicketTextblock.Text);
+				decimal oldmoney = Convert.ToDecimal(TotalMoneyTextblock.Text);
+				decimal logicmoney = Convert.ToDecimal(LogicTotalMoneyTextbox.Text);
+				decimal logiccostmoney = Convert.ToDecimal(LogicCostMoneyTextbox.Text);
+				int oldticketnum = (int)(oldmoney / logicmoney);
 				if(AddNum >= 1)
 				{
 					string copyTicketNo = ManageAddTicketNoTextblock.Text;
@@ -654,18 +663,28 @@ namespace SCYTChargeSystem
 								string no = ManageAddTicketNoTextblock.Text;
 								if(i == AddNum - 1)
 								{
-									decimal smallchange = money % logicmonty;
-									DoBussiness.AddTicket(t,no,phone,logicmonty + smallchange);
+									decimal smallchange = money % logiccostmoney;
+									DoBussiness.AddTicket(t,no,phone,logiccostmoney + smallchange);
 								}
 								else
 								{
-									DoBussiness.AddTicket(t,no,phone,logicmonty);
+									DoBussiness.AddTicket(t,no,phone,logiccostmoney);
 								}
-								DoBussiness.UpdateSendNum(t);
+								DoBussiness.UpdateSendNumAdd(t);
 								TicketNoIncrease(ManageAddTicketNoTextblock.Text.Remove(0,LogicTicketNoTextbox.Text.Length));
 							}
 							DoBussiness.UpdateMoneyAdd(t,money);
 							t.Commit();
+							LoadMoney();
+							decimal newmoney = Convert.ToDecimal(TotalMoneyTextblock.Text);
+							int newticketnum = (int)(newmoney / logicmoney);
+							if(oldticketnum != newticketnum)
+							{
+								DbHelper db = new DbHelper();
+								DbCommand selecthistory = db.GetSqlStringCommond("select * from TicketNum");
+								int historynum = (int)db.ExecuteScalar(selecthistory);
+								DoBussiness.UpdateTicketNum(null,historynum + (newticketnum - oldticketnum));
+							}
 							MessageBox.Show("添加成功");
 							LoadMain();
 						}
@@ -743,7 +762,6 @@ namespace SCYTChargeSystem
 									t.Commit();
 									MessageBox.Show("领取成功");
 									LoadMain();
-									QueryTicketButton_Click(sender,e);
 								}
 								catch(Exception ex)
 								{
@@ -797,7 +815,6 @@ namespace SCYTChargeSystem
 								t.Commit();
 								MessageBox.Show("过号成功");
 								LoadMain();
-								QueryTicketButton_Click(sender,e);
 							}
 							catch(Exception ex)
 							{
@@ -846,7 +863,6 @@ namespace SCYTChargeSystem
 								t.Commit();
 								MessageBox.Show("重新排队成功");
 								LoadMain();
-								QueryTicketButton_Click(sender,e);
 							}
 							catch(Exception ex)
 							{
@@ -880,6 +896,9 @@ namespace SCYTChargeSystem
 				}
 				else
 				{
+					decimal oldmoney = Convert.ToDecimal(TotalMoneyTextblock.Text);
+					decimal logicmoney = Convert.ToDecimal(LogicTotalMoneyTextbox.Text);
+					int oldticketnum = (int)(oldmoney / logicmoney);
 					foreach(DataRow dr in drs)
 					{
 						TimeSpan ts = DateTime.Now - Convert.ToDateTime(DateTime.Today.ToShortDateString() + " 06:00:00");
@@ -918,10 +937,20 @@ namespace SCYTChargeSystem
 									DoBussiness.MainTicketStateChange(t,state,UID);
 								}
 								DoBussiness.UpdateMoneyDelete(t,money);
+								DoBussiness.UpdateSendNumDelete(t);
 								t.Commit();
+								LoadMoney();
+								decimal newmoney = Convert.ToDecimal(TotalMoneyTextblock.Text);
+								int newticketnum = (int)(newmoney / logicmoney);
+								if(oldticketnum != newticketnum)
+								{
+									DbHelper db = new DbHelper();
+									DbCommand selecthistory = db.GetSqlStringCommond("select * from TicketNum");
+									int historynum = (int)db.ExecuteScalar(selecthistory);
+									DoBussiness.UpdateTicketNum(null,historynum - (oldticketnum - newticketnum));
+								}
 								MessageBox.Show("作废成功");
 								LoadMain();
-								QueryTicketButton_Click(sender,e);
 							}
 							catch(Exception ex)
 							{

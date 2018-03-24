@@ -222,7 +222,7 @@ namespace SCYTChargeSystem
 			return dt;
 		}
 
-		public static void UpdateSendNum(Trans t)
+		public static void UpdateSendNumAdd(Trans t)
 		{
 			DbHelper db = new DbHelper();
 			DbCommand update = db.GetSqlStringCommond("update Money set SendNum = SendNum + @SendNum");
@@ -237,7 +237,21 @@ namespace SCYTChargeSystem
 				db.ExecuteNonQuery(update,t);
 			}
 		}
+		public static void UpdateSendNumDelete(Trans t)
+		{
+			DbHelper db = new DbHelper();
+			DbCommand update = db.GetSqlStringCommond("update Money set SendNum = SendNum - @SendNum");
+			db.AddInParameter(update,"@SendNum",DbType.Int32,1);
 
+			if(t == null)
+			{
+				db.ExecuteNonQuery(update);
+			}
+			else
+			{
+				db.ExecuteNonQuery(update,t);
+			}
+		}
 		public static void UpdateExchangeNum(Trans t)
 		{
 			DbHelper db = new DbHelper();
