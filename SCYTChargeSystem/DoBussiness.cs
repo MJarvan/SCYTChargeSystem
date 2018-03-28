@@ -17,16 +17,15 @@ namespace SCYTChargeSystem
 		/// <param name="no">兑换券编号</param>
 		/// <param name="phone">电话号码</param>
 		/// <param name="money">金额</param>
-		public static void AddTicket(Trans t,string no,string phone, decimal money)
+		public static void AddTicket(Trans t,string no,string phone)
 		{
 			DbHelper db = new DbHelper();
 			DateTime TicketCreateTime = new DateTime();
 			TicketCreateTime = DateTime.Now;
-			DbCommand insert = db.GetSqlStringCommond("insert into Ticket values (@No, @Phone, @Money, @State, @CreateDate, @UseDate, @IsSelected)");
+			DbCommand insert = db.GetSqlStringCommond("insert into Ticket values (@No, @Phone, @State, @CreateDate, @UseDate, @IsSelected)");
 
 			db.AddInParameter(insert,"@No",DbType.String,no);
 			db.AddInParameter(insert,"@Phone",DbType.String,phone);
-			db.AddInParameter(insert,"@Money",DbType.Decimal,money);
 			db.AddInParameter(insert,"@State",DbType.String,"1");
 			db.AddInParameter(insert,"@CreateDate",DbType.DateTime,TicketCreateTime);
 			db.AddInParameter(insert,"@UseDate",DbType.DateTime,DBNull.Value);
@@ -139,6 +138,21 @@ namespace SCYTChargeSystem
 			}
 		}
 
+		public static DataTable TotalSendNumQuery(string createdate)
+		{
+			DataTable dt = null;
+			DbHelper db = new DbHelper();
+			DateTime datetime = Convert.ToDateTime(createdate);
+			DbCommand selectmanage = db.GetSqlStringCommond("select * from Ticket where State != @State and CreateDate between dateadd(hh,+6,Datename(year,@CreateDate) + '-' + Datename(month,@CreateDate) + '-' + Datename(day,@CreateDate)) and DATEADD(day,1,dateadd(hh,+6,Datename(year,@CreateDate) + '-' + Datename(month,@CreateDate) + '-' + Datename(day,@CreateDate)))");
+			db.AddInParameter(selectmanage,"@State",DbType.String,"3");
+			db.AddInParameter(selectmanage,"@CreateDate",DbType.DateTime,datetime);
+			if(selectmanage != null)
+			{
+				dt = db.ExecuteDataTable(selectmanage);
+			}
+			return dt;
+		}
+
 		public static DataTable ManageQuery(string state,string createdate,string querytext)
 		{
 			DataTable dt = null;
@@ -190,14 +204,16 @@ namespace SCYTChargeSystem
 					if(querytext != string.Empty)
 					{
 						//只有日期和文本
-						selectmanage = db.GetSqlStringCommond("select * from Ticket where CreateDate between dateadd(hh,+6,Datename(year,@CreateDate) + '-' + Datename(month,@CreateDate) + '-' + Datename(day,@CreateDate)) and DATEADD(day,1,dateadd(hh,+6,Datename(year,@CreateDate) + '-' + Datename(month,@CreateDate) + '-' + Datename(day,@CreateDate))) and No LIKE @querytext");
+						selectmanage = db.GetSqlStringCommond("select * from Ticket where State != @State and CreateDate between dateadd(hh,+6,Datename(year,@CreateDate) + '-' + Datename(month,@CreateDate) + '-' + Datename(day,@CreateDate)) and DATEADD(day,1,dateadd(hh,+6,Datename(year,@CreateDate) + '-' + Datename(month,@CreateDate) + '-' + Datename(day,@CreateDate))) and No LIKE @querytext");
+						db.AddInParameter(selectmanage,"@State",DbType.String,"3");
 						db.AddInParameter(selectmanage,"@CreateDate",DbType.DateTime,datetime);
 						db.AddInParameter(selectmanage,"@querytext",DbType.String,querytext);
 					}
 					else
 					{
 						//只有日期
-						selectmanage = db.GetSqlStringCommond("select * from Ticket where CreateDate between dateadd(hh,+6,Datename(year,@CreateDate) + '-' + Datename(month,@CreateDate) + '-' + Datename(day,@CreateDate)) and DATEADD(day,1,dateadd(hh,+6,Datename(year,@CreateDate) + '-' + Datename(month,@CreateDate) + '-' + Datename(day,@CreateDate)))");
+						selectmanage = db.GetSqlStringCommond("select * from Ticket where State != @State and  CreateDate between dateadd(hh,+6,Datename(year,@CreateDate) + '-' + Datename(month,@CreateDate) + '-' + Datename(day,@CreateDate)) and DATEADD(day,1,dateadd(hh,+6,Datename(year,@CreateDate) + '-' + Datename(month,@CreateDate) + '-' + Datename(day,@CreateDate)))");
+						db.AddInParameter(selectmanage,"@State",DbType.String,"3");
 						db.AddInParameter(selectmanage,"@CreateDate",DbType.DateTime,datetime);
 					}
 				}
@@ -206,7 +222,8 @@ namespace SCYTChargeSystem
 					if(querytext != string.Empty)
 					{
 						//只有文本
-						selectmanage = db.GetSqlStringCommond("select * from Ticket where No LIKE @querytext");
+						selectmanage = db.GetSqlStringCommond("select * from Ticket where No LIKE @querytext and State != @State");
+						db.AddInParameter(selectmanage,"@State",DbType.String,"3");
 						db.AddInParameter(selectmanage,"@querytext",DbType.String,querytext);
 					}
 					else

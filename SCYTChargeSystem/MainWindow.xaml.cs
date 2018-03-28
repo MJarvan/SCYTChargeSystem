@@ -92,12 +92,11 @@ namespace SCYTChargeSystem
 				LogicInfo = File.ReadAllLines(LogicPath).ToList();
 				bool errorState = false;
 
-				if(LogicInfo.Count >= 3)
+				if(LogicInfo.Count >= 2)
 				{
 					LogicCostMoneyTextbox.Text = LogicInfo[0];
 					LogicTotalMoneyTextbox.Text = LogicInfo[1];
 					LogicTotalMoneyReadTextbox.Text = LogicTotalMoneyTextbox.Text;
-					LogicTicketNoTextbox.Text = LogicInfo[2];
 					errorState = true;
 				}
 
@@ -112,10 +111,8 @@ namespace SCYTChargeSystem
 				LogicCostMoneyTextbox.Text = "100";
 				LogicTotalMoneyTextbox.Text = "2000";
 				LogicTotalMoneyReadTextbox.Text = LogicTotalMoneyTextbox.Text;
-				LogicTicketNoTextbox.Text = "A100";
 				LogicInfo.Add("100");
 				LogicInfo.Add("2000");
-				LogicInfo.Add("A100");
 				LogicSave_Click(null,new RoutedEventArgs());
 			}
 		}
@@ -142,11 +139,10 @@ namespace SCYTChargeSystem
 			}
 			else
 			{
-				if(LogicCostMoneyTextbox.Text != null && LogicCostMoneyTextbox.Text != "" && LogicTotalMoneyTextbox.Text != null && LogicTotalMoneyTextbox.Text != "" && LogicTicketNoTextbox.Text != null && LogicTicketNoTextbox.Text != "")
+				if(LogicCostMoneyTextbox.Text != null && LogicCostMoneyTextbox.Text != "" && LogicTotalMoneyTextbox.Text != null && LogicTotalMoneyTextbox.Text != "")
 				{
 					LogicInfo[0] = LogicCostMoneyTextbox.Text;
 					LogicInfo[1] = LogicTotalMoneyTextbox.Text;
-					LogicInfo[2] = LogicTicketNoTextbox.Text;
 					File.WriteAllLines(LogicPath,LogicInfo.ToArray());
 					MessageBox.Show("保存成功!");
 					LoadLogic();
@@ -169,11 +165,13 @@ namespace SCYTChargeSystem
 		{
 			MainAddPhoneNumberTextbox.Text = string.Empty;
 			MainAddMoneyTextbox.Text = string.Empty;
-			MainReceiveTicketTextblock.Text = string.Empty;
+			MainAddTicketNoTextbox.Text = string.Empty;
+			MainReceiveTicketTextbox.Text = string.Empty;
+
 			ManageAddPhoneNumberTextbox.Text = string.Empty;
 			ManageAddMoneyTextbox.Text = string.Empty;
-			ManageReceiveTicketTextblock.Text = string.Empty;
-
+			ManageReceiveTicketTextbox.Text = string.Empty;
+			ManageAddTicketNoTextbox.Text = string.Empty;
 			//获取主页datagrid
 			DbHelper db = new DbHelper();
 			DbCommand selectmain = db.GetSqlStringCommond("select top(10)* from Ticket where State = 1 order by CreateDate ASC,UID ASC");
@@ -191,7 +189,7 @@ namespace SCYTChargeSystem
 			MainTicketDatagrid.ItemsSource = maindt.DefaultView;
 
 			//获取管理页datagrid
-			DbCommand selectmanage = db.GetSqlStringCommond("select top(10)* from Ticket order by CreateDate DESC,UID DESC");
+			DbCommand selectmanage = db.GetSqlStringCommond("select top(10)* from Ticket where State != 3 order by CreateDate DESC,UID DESC");
 			managedt = db.ExecuteDataTable(selectmanage);
 			DataRow[] IsSelectedRows1 = managedt.Select("IsSelected=0");
 			foreach(DataRow row in IsSelectedRows1)
@@ -214,68 +212,22 @@ namespace SCYTChargeSystem
 							row["State"] = "已领取";
 							break;
 						}
-					case 3:
-						{
-							row["State"] = "作废";
-							break;
-						}
 				}
 			}
 			ManageTicketDatagrid.ItemsSource = managedt.DefaultView;
 
-			//获取兑换券编号
-			DbCommand TicketNomain = db.GetSqlStringCommond("select top(1)No from Ticket order by UID DESC");
-			try
-			{
-				string lastestNo = db.ExecuteScalar(TicketNomain).ToString();
-				string lastestNoFour = lastestNo.Remove(0,LogicTicketNoTextbox.Text.Length);
-				if(lastestNo == "9999")
-				{
-					MessageBox.Show("请及时更换表头,否则将添加兑换券数据会出错");
-				}
-				else
-				{
-					MainAddTicketNoTextblock.Text = LogicTicketNoTextbox.Text + lastestNoFour;
-					ManageAddTicketNoTextblock.Text = LogicTicketNoTextbox.Text + lastestNoFour;
-					TicketNoIncrease(MainAddTicketNoTextblock.Text.Remove(0,LogicTicketNoTextbox.Text.Length));
-				}
-			}
-			catch
-			{
-				MainAddTicketNoTextblock.Text = LogicTicketNoTextbox.Text + "0000";
-				ManageAddTicketNoTextblock.Text = LogicTicketNoTextbox.Text + "0000";
-			}
-
-
 			//获取营业额
 			LoadMoney();
-
 
 			//获取其他信息
 			DbCommand selecthistory = db.GetSqlStringCommond("select * from TicketNum");
 			int historynum = (int)db.ExecuteScalar(selecthistory);
-			//if(historynum != nownum)
-			//{
-			//	using(Trans t = new Trans())
-			//	{
-			//		try
-			//		{
-			//			DoBussiness.UpdateTicketNum(t,nownum);
-			//			t.Commit();
-			//		}
-			//		catch(Exception ex)
-			//		{
-			//			MessageBox.Show(ex.Message + " ,更新可兑换券信息失败,请联系管理员");
-			//			t.RollBack();
-			//		}
-			//	}
-			//}
 			DbCommand SendTicketNummain = db.GetSqlStringCommond("select * from Ticket where UseDate between dateadd(hh,+6,Datename(year,GetDate())+'-'+Datename(month,GetDate())+'-'+Datename(day,GetDate()))and DATEADD(day,1,dateadd(hh,+6,Datename(year,GetDate()) + '-' + Datename(month,GetDate()) + '-' + Datename(day,GetDate()))) and state = 2");
 			DataTable SendTicketNum = db.ExecuteDataTable(SendTicketNummain);
 			SendNumTextblock.Text = SendTicketNum.Rows.Count.ToString();
-			DataTable dt = DoBussiness.ManageQuery("1",DateTime.Now.ToShortDateString(),string.Empty);
+			DataTable dt = DoBussiness.TotalSendNumQuery(DateTime.Now.ToShortDateString());
 			TotalSendNumTextblock.Text = dt.Rows.Count.ToString();
-			RemainNumTextblock.Text = (historynum - Convert.ToInt32(SendNumTextblock.Text)).ToString();
+			RemainNumTextblock.Text = historynum.ToString();
 		}
 
 
@@ -345,55 +297,75 @@ namespace SCYTChargeSystem
 		}
 
 		/// <summary>
-		/// 主页添加按钮
+		/// 主页金额添加按钮
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void MainAddMoneyButton_Click(object sender,RoutedEventArgs e)
+		{
+			if(MainAddMoneyTextbox.Text != null && MainAddMoneyTextbox.Text != "")
+			{
+				decimal oldmoney = Convert.ToDecimal(TotalMoneyTextblock.Text);
+				decimal logicmoney = Convert.ToDecimal(LogicTotalMoneyTextbox.Text);
+				int oldticketnum = (int)(oldmoney / logicmoney);
+				using(Trans t = new Trans())
+				{
+					try
+					{
+						decimal money = Convert.ToDecimal(MainAddMoneyTextbox.Text);
+						DoBussiness.UpdateMoneyAdd(t,money);
+						t.Commit();
+						LoadMoney();
+						decimal newmoney = Convert.ToDecimal(TotalMoneyTextblock.Text);
+						int newticketnum = (int)(newmoney / logicmoney);
+						if(oldticketnum != newticketnum)
+						{
+							DbHelper db = new DbHelper();
+							DbCommand selecthistory = db.GetSqlStringCommond("select * from TicketNum");
+							int historynum = (int)db.ExecuteScalar(selecthistory);
+							DoBussiness.UpdateTicketNum(null,historynum + (newticketnum - oldticketnum));
+						}
+						MessageBox.Show("添加成功");
+						LoadMain();
+					}
+					catch(Exception ex)
+					{
+						MessageBox.Show(ex.Message + ",添加失败,请联系管理员");
+						t.RollBack();
+					}
+				}
+			}
+			else
+			{
+				MessageBox.Show("请填写完整信息");
+			}
+		}
+
+		/// <summary>
+		/// 主页兑换券添加按钮
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
 		private void MainAddTicketButton_Click(object sender,RoutedEventArgs e)
 		{
-			if(MainAddPhoneNumberTextbox.Text != null && MainAddPhoneNumberTextbox.Text != "" && MainAddMoneyTextbox.Text != null && MainAddMoneyTextbox.Text != "")
+			if(MainAddTicketNoTextbox.Text != null && MainAddTicketNoTextbox.Text != "" && MainReceiveTicketTextbox.Text != null && MainReceiveTicketTextbox.Text != "" && MainAddPhoneNumberTextbox.Text != null && MainAddPhoneNumberTextbox.Text != "" && MainAddTicketNoTextbox.Text.Length > 4)
 			{
-				int AddNum = Convert.ToInt32(MainReceiveTicketTextblock.Text);
-				decimal oldmoney = Convert.ToDecimal(TotalMoneyTextblock.Text);
-				decimal logicmoney = Convert.ToDecimal(LogicTotalMoneyTextbox.Text);
-				decimal logiccostmoney = Convert.ToDecimal(LogicCostMoneyTextbox.Text);
-				int oldticketnum = (int)(oldmoney / logicmoney);
+				int AddNum = Convert.ToInt32(MainReceiveTicketTextbox.Text);
 				if(AddNum >= 1)
 				{
-					string copyTicketNo = MainAddTicketNoTextblock.Text;
 					using(Trans t = new Trans())
 					{
 						try
 						{
 							string phone = MainAddPhoneNumberTextbox.Text;
-							decimal money = Convert.ToDecimal(MainAddMoneyTextbox.Text);
 							for(int i = 0;i < AddNum;i++)
 							{
-								string no = MainAddTicketNoTextblock.Text;
-								if(i == AddNum - 1)
-								{
-									decimal smallchange = money % logiccostmoney;
-									DoBussiness.AddTicket(t,no,phone,logiccostmoney + smallchange);
-								}
-								else
-								{
-									DoBussiness.AddTicket(t,no,phone,logiccostmoney);
-								}
+								string no = MainAddTicketNoTextbox.Text;
+								DoBussiness.AddTicket(t,no,phone);
 								DoBussiness.UpdateSendNumAdd(t);
-								TicketNoIncrease(MainAddTicketNoTextblock.Text.Remove(0,LogicTicketNoTextbox.Text.Length));
+								MainAddTicketNoTextbox.Text = TicketNoIncrease(no);
 							}
-							DoBussiness.UpdateMoneyAdd(t,money);
 							t.Commit();
-							LoadMoney();
-							decimal newmoney = Convert.ToDecimal(TotalMoneyTextblock.Text);
-							int newticketnum = (int)(newmoney / logicmoney);
-							if(oldticketnum != newticketnum)
-							{
-								DbHelper db = new DbHelper();
-								DbCommand selecthistory = db.GetSqlStringCommond("select * from TicketNum");
-								int historynum = (int)db.ExecuteScalar(selecthistory);
-								DoBussiness.UpdateTicketNum(null,historynum + (newticketnum - oldticketnum));
-							}
 							MessageBox.Show("添加成功");
 							LoadMain();
 						}
@@ -401,29 +373,12 @@ namespace SCYTChargeSystem
 						{
 							MessageBox.Show(ex.Message + ",添加失败,请联系管理员");
 							t.RollBack();
-							MainAddTicketNoTextblock.Text = copyTicketNo;
-							ManageAddTicketNoTextblock.Text = copyTicketNo; 
 						}
 					}
 				}
 				else
 				{
-					MessageBox.Show("消费额度未满,不能发放兑换券,但营业额仍会更新");
-					using(Trans t = new Trans())
-					{
-						try
-						{
-							decimal money = Convert.ToDecimal(MainAddMoneyTextbox.Text);
-							DoBussiness.UpdateMoneyAdd(t,money);
-							t.Commit();
-							LoadMain();
-						}
-						catch(Exception ex)
-						{
-							MessageBox.Show(ex.Message);
-							t.RollBack();
-						}
-					}
+					MessageBox.Show("兑换券表头不一样,请重新填写");
 				}
 			}
 			else
@@ -435,17 +390,17 @@ namespace SCYTChargeSystem
 		/// <summary>
 		/// 兑换券编号递增
 		/// </summary>
-		/// <param name="noEnd"></param>
-		private void TicketNoIncrease(string noEnd)
+		/// <param name="OldTicketNo"></param>
+		private string TicketNoIncrease(string OldTicketNo)
 		{
-			int no = Convert.ToInt32(noEnd);
+			string NewTicketNo = string.Empty;
+			string tickettop = OldTicketNo.Remove(OldTicketNo.Length - 4,4);
+			int no = Convert.ToInt32(OldTicketNo.Remove(0,4));
 			string four = string.Empty, three = string.Empty, two = string.Empty, one = string.Empty;
 
 			if(no == 0)
 			{
-				string sum = "0001";
-				MainAddTicketNoTextblock.Text = LogicTicketNoTextbox.Text + sum;
-				ManageAddTicketNoTextblock.Text = LogicTicketNoTextbox.Text + sum;
+				NewTicketNo = tickettop + "0001";
 			}
 			else
 			{
@@ -479,10 +434,9 @@ namespace SCYTChargeSystem
 				}
 				one = no.ToString();
 
-				string sum = four + three + two + one;
-				MainAddTicketNoTextblock.Text = LogicTicketNoTextbox.Text + sum;
-				ManageAddTicketNoTextblock.Text = LogicTicketNoTextbox.Text + sum;
+				NewTicketNo = tickettop + four + three + two + one;
 			}
+			return NewTicketNo;
 		}
 
 		/// <summary>
@@ -501,21 +455,6 @@ namespace SCYTChargeSystem
 				{
 					textbox.Text = textbox.Text.Remove(textbox.Text.Length - 1,1);
 					textbox.SelectionStart = textbox.Text.Length;
-				}
-				else
-				{
-					decimal money = Convert.ToDecimal(textbox.Text);
-					int logicmonty = Convert.ToInt32(LogicCostMoneyTextbox.Text);
-					if(money / logicmonty >= 1)
-					{
-						MainReceiveTicketTextblock.Text = ((int)(money / logicmonty)).ToString();
-						ManageReceiveTicketTextblock.Text = ((int)(money / logicmonty)).ToString(); ;
-					}
-					else
-					{
-						MainReceiveTicketTextblock.Text = "0";
-						ManageReceiveTicketTextblock.Text = "0";
-					}
 				}
 			}
 		}
@@ -636,43 +575,73 @@ namespace SCYTChargeSystem
 
 		#region 兑换券管理
 		/// <summary>
-		/// 管理页添加按钮
+		/// 管理页营业额添加按钮
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
 		private void ManageAddTicketButton_Click(object sender,RoutedEventArgs e)
 		{
-			if(ManageAddPhoneNumberTextbox.Text != null && ManageAddPhoneNumberTextbox.Text != "" && ManageAddMoneyTextbox.Text != null && ManageAddMoneyTextbox.Text != "")
+			if(ManageAddTicketNoTextbox.Text != null && ManageAddTicketNoTextbox.Text != "" && ManageReceiveTicketTextbox.Text != null && ManageReceiveTicketTextbox.Text != "" && ManageAddPhoneNumberTextbox.Text != null && ManageAddPhoneNumberTextbox.Text != "" && ManageAddTicketNoTextbox.Text.Length > 4)
 			{
-				int AddNum = Convert.ToInt32(MainReceiveTicketTextblock.Text);
-				decimal oldmoney = Convert.ToDecimal(TotalMoneyTextblock.Text);
-				decimal logicmoney = Convert.ToDecimal(LogicTotalMoneyTextbox.Text);
-				decimal logiccostmoney = Convert.ToDecimal(LogicCostMoneyTextbox.Text);
-				int oldticketnum = (int)(oldmoney / logicmoney);
+				int AddNum = Convert.ToInt32(ManageReceiveTicketTextbox.Text);
 				if(AddNum >= 1)
 				{
-					string copyTicketNo = ManageAddTicketNoTextblock.Text;
 					using(Trans t = new Trans())
 					{
 						try
 						{
 							string phone = ManageAddPhoneNumberTextbox.Text;
-							decimal money = Convert.ToDecimal(ManageAddMoneyTextbox.Text);
 							for(int i = 0;i < AddNum;i++)
 							{
-								string no = ManageAddTicketNoTextblock.Text;
-								if(i == AddNum - 1)
-								{
-									decimal smallchange = money % logiccostmoney;
-									DoBussiness.AddTicket(t,no,phone,logiccostmoney + smallchange);
-								}
-								else
-								{
-									DoBussiness.AddTicket(t,no,phone,logiccostmoney);
-								}
+								string no = ManageAddTicketNoTextbox.Text;
+								DoBussiness.AddTicket(t,no,phone);
 								DoBussiness.UpdateSendNumAdd(t);
-								TicketNoIncrease(ManageAddTicketNoTextblock.Text.Remove(0,LogicTicketNoTextbox.Text.Length));
+								ManageAddTicketNoTextbox.Text = TicketNoIncrease(no);
 							}
+							t.Commit();
+							MessageBox.Show("添加成功");
+							LoadMain();
+						}
+						catch(Exception ex)
+						{
+							MessageBox.Show(ex.Message + ",添加失败,请联系管理员");
+							t.RollBack();
+						}
+					}
+				}
+				else
+				{
+					MessageBox.Show("兑换券表头不一样,请重新填写");
+				}
+			}
+			else
+			{
+				MessageBox.Show("请填写完整信息");
+			}
+		}
+
+		/// <summary>
+		/// 管理页营业额添加或删除按钮
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void ManageMoneyButton_Click(object sender,RoutedEventArgs e)
+		{
+			Button button = sender as Button;
+			bool AddOrDelete = Convert.ToBoolean(button.Tag);
+			//添加营业额
+			if(AddOrDelete)
+			{
+				if(ManageAddMoneyTextbox.Text != null && ManageAddMoneyTextbox.Text != "")
+				{
+					decimal oldmoney = Convert.ToDecimal(TotalMoneyTextblock.Text);
+					decimal logicmoney = Convert.ToDecimal(LogicTotalMoneyTextbox.Text);
+					int oldticketnum = (int)(oldmoney / logicmoney);
+					using(Trans t = new Trans())
+					{
+						try
+						{
+							decimal money = Convert.ToDecimal(ManageAddMoneyTextbox.Text);
 							DoBussiness.UpdateMoneyAdd(t,money);
 							t.Commit();
 							LoadMoney();
@@ -692,34 +661,53 @@ namespace SCYTChargeSystem
 						{
 							MessageBox.Show(ex.Message + ",添加失败,请联系管理员");
 							t.RollBack();
-							MainAddTicketNoTextblock.Text = copyTicketNo;
-							ManageAddTicketNoTextblock.Text = copyTicketNo;
 						}
 					}
 				}
 				else
 				{
-					MessageBox.Show("消费额度未满,不能发放兑换券,但营业额仍会更新");
+					MessageBox.Show("请填写完整信息");
+				}
+			}
+			//删除营业额
+			else
+			{
+				if(ManageDeleteMoneyTextbox.Text != null && ManageDeleteMoneyTextbox.Text != "")
+				{
+					decimal oldmoney = Convert.ToDecimal(TotalMoneyTextblock.Text);
+					decimal logicmoney = Convert.ToDecimal(LogicTotalMoneyTextbox.Text);
+					int oldticketnum = (int)(oldmoney / logicmoney);
 					using(Trans t = new Trans())
 					{
 						try
 						{
-							decimal money = Convert.ToDecimal(ManageAddMoneyTextbox.Text);
-							DoBussiness.UpdateMoneyAdd(t,money);
+							decimal money = Convert.ToDecimal(ManageDeleteMoneyTextbox.Text);
+							DoBussiness.UpdateMoneyDelete(t,money);
 							t.Commit();
+							LoadMoney();
+							decimal newmoney = Convert.ToDecimal(TotalMoneyTextblock.Text);
+							int newticketnum = (int)(newmoney / logicmoney);
+							if(oldticketnum != newticketnum)
+							{
+								DbHelper db = new DbHelper();
+								DbCommand selecthistory = db.GetSqlStringCommond("select * from TicketNum");
+								int historynum = (int)db.ExecuteScalar(selecthistory);
+								DoBussiness.UpdateTicketNum(null,historynum - (oldticketnum - newticketnum));
+							}
+							MessageBox.Show("删除成功");
 							LoadMain();
 						}
 						catch(Exception ex)
 						{
-							MessageBox.Show(ex.Message);
+							MessageBox.Show(ex.Message + ",删除失败,请联系管理员");
 							t.RollBack();
 						}
 					}
 				}
-			}
-			else
-			{
-				MessageBox.Show("请填写完整信息");
+				else
+				{
+					MessageBox.Show("请填写完整信息");
+				}
 			}
 		}
 
@@ -896,9 +884,6 @@ namespace SCYTChargeSystem
 				}
 				else
 				{
-					decimal oldmoney = Convert.ToDecimal(TotalMoneyTextblock.Text);
-					decimal logicmoney = Convert.ToDecimal(LogicTotalMoneyTextbox.Text);
-					int oldticketnum = (int)(oldmoney / logicmoney);
 					foreach(DataRow dr in drs)
 					{
 						TimeSpan ts = DateTime.Now - Convert.ToDateTime(DateTime.Today.ToShortDateString() + " 06:00:00");
@@ -907,7 +892,7 @@ namespace SCYTChargeSystem
 						{
 							if(Convert.ToDateTime(dr["CreateDate"]).ToShortDateString() != DateTime.Today.ToShortDateString())
 							{
-								MessageBox.Show("只能作废当天的兑换券,请重新操作");
+								MessageBox.Show("只能删除当天的兑换券,请重新操作");
 								return;
 							}
 						}
@@ -916,45 +901,32 @@ namespace SCYTChargeSystem
 						{
 							if(Convert.ToDateTime(dr["CreateDate"]).ToShortDateString() != DateTime.Now.AddDays(-1).ToShortDateString())
 							{
-								MessageBox.Show("只能作废当天的兑换券,请重新操作");
+								MessageBox.Show("只能删除当天的兑换券,请重新操作");
 								return;
 							}
 						}
 					}
-					if(MessageBox.Show("是否确认作废这些券?(作废会扣除营业额)","提醒",MessageBoxButton.YesNo,MessageBoxImage.Warning) == MessageBoxResult.Yes)
+					if(MessageBox.Show("是否确认删除这些券?(删除后不可恢复)","提醒",MessageBoxButton.YesNo,MessageBoxImage.Warning) == MessageBoxResult.Yes)
 					{
 						using(Trans t = new Trans())
 						{
 							try
 							{
-								decimal money = 0;
 
 								foreach(DataRow dr in drs)
 								{
 									string state = "3";
 									int UID = Convert.ToInt32(dr["UID"].ToString());
-									money = money + Convert.ToDecimal(dr["Money"].ToString());
 									DoBussiness.MainTicketStateChange(t,state,UID);
 								}
-								DoBussiness.UpdateMoneyDelete(t,money);
 								DoBussiness.UpdateSendNumDelete(t);
 								t.Commit();
-								LoadMoney();
-								decimal newmoney = Convert.ToDecimal(TotalMoneyTextblock.Text);
-								int newticketnum = (int)(newmoney / logicmoney);
-								if(oldticketnum != newticketnum)
-								{
-									DbHelper db = new DbHelper();
-									DbCommand selecthistory = db.GetSqlStringCommond("select * from TicketNum");
-									int historynum = (int)db.ExecuteScalar(selecthistory);
-									DoBussiness.UpdateTicketNum(null,historynum - (oldticketnum - newticketnum));
-								}
-								MessageBox.Show("作废成功");
+								MessageBox.Show("删除成功");
 								LoadMain();
 							}
 							catch(Exception ex)
 							{
-								MessageBox.Show(ex.Message + " ,作废失败,请联系管理员");
+								MessageBox.Show(ex.Message + " ,删除失败,请联系管理员");
 								t.RollBack();
 							}
 						}
@@ -995,11 +967,11 @@ namespace SCYTChargeSystem
 							state = "2";
 							break;
 						}
-					case "作废":
-						{
-							state = "3";
-							break;
-						}
+					//case "删除":
+					//	{
+					//		state = "3";
+					//		break;
+					//	}
 					default:
 						{
 							state = string.Empty;
@@ -1038,11 +1010,6 @@ namespace SCYTChargeSystem
 						case 2:
 							{
 								row["State"] = "已领取";
-								break;
-							}
-						case 3:
-							{
-								row["State"] = "作废";
 								break;
 							}
 					}
