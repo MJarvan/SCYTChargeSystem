@@ -172,6 +172,7 @@ namespace SCYTChargeSystem
 			ManageAddMoneyTextbox.Text = string.Empty;
 			ManageReceiveTicketTextbox.Text = string.Empty;
 			ManageAddTicketNoTextbox.Text = string.Empty;
+			ManageDeleteMoneyTextbox.Text = string.Empty;
 			//获取主页datagrid
 			DbHelper db = new DbHelper();
 			DbCommand selectmain = db.GetSqlStringCommond("select top(10)* from Ticket where State = 1 order by CreateDate ASC,UID ASC");
@@ -340,6 +341,42 @@ namespace SCYTChargeSystem
 				MessageBox.Show("请填写完整信息");
 			}
 		}
+	
+		/// <summary>
+		/// 主页enter
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void MainTextbox_KeyDown(object sender,KeyEventArgs e)
+		{
+			TextBox textbox = sender as TextBox;
+			if(e.Key == Key.Enter)
+			{
+				switch(textbox.Tag.ToString())
+				{
+					case "0":
+						{
+							MainAddMoneyButton_Click(sender,e);
+							break;
+						}
+					case "1":
+						{
+							MainReceiveTicketTextbox.Focus();
+							break;
+						}
+					case "2":
+						{
+							MainAddPhoneNumberTextbox.Focus();
+							break;
+						}
+					case "3":
+						{
+							MainAddTicketButton_Click(sender,e);
+							break;
+						}
+				}
+			}
+		}
 
 		/// <summary>
 		/// 主页兑换券添加按钮
@@ -378,7 +415,7 @@ namespace SCYTChargeSystem
 				}
 				else
 				{
-					MessageBox.Show("兑换券表头不一样,请重新填写");
+					MessageBox.Show("领券数量必须大于等于1");
 				}
 			}
 			else
@@ -611,7 +648,7 @@ namespace SCYTChargeSystem
 				}
 				else
 				{
-					MessageBox.Show("兑换券表头不一样,请重新填写");
+					MessageBox.Show("领券数量必须大于等于1");
 				}
 			}
 			else
@@ -707,6 +744,43 @@ namespace SCYTChargeSystem
 				else
 				{
 					MessageBox.Show("请填写完整信息");
+				}
+			}
+		}
+
+
+		private void ManageTextbox_KeyDown(object sender,KeyEventArgs e)
+		{
+			TextBox textbox = sender as TextBox;
+			if(e.Key == Key.Enter)
+			{
+				switch(textbox.Tag.ToString())
+				{
+					case "4":
+						{
+							ManageMoneyButton_Click(ManageAddMoneyButton,e);
+							break;
+						}
+					case "5":
+						{
+							ManageMoneyButton_Click(ManageDeleteMoneyButton,e);
+							break;
+						}
+					case "6":
+						{
+							ManageReceiveTicketTextbox.Focus();
+							break;
+						}
+					case "7":
+						{
+							ManageAddPhoneNumberTextbox.Focus();
+							break;
+						}
+					case "8":
+						{
+							ManageAddTicketButton_Click(sender,e);
+							break;
+						}
 				}
 			}
 		}
@@ -1872,5 +1946,6 @@ namespace SCYTChargeSystem
 			}
 			return null;
 		}
+
 	}
 }

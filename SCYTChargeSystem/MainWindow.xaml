@@ -70,7 +70,7 @@
 					<WrapPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
 						<WrapPanel Orientation="Horizontal" Margin="5">
 							<TextBlock Margin="5" Foreground="Red">营业额</TextBlock>
-							<TextBox Width="100" Name="MainAddMoneyTextbox" TextChanged="MainAddMoneyTextbox_TextChanged"></TextBox>
+							<TextBox Tag="0" Width="100" Name="MainAddMoneyTextbox" TextChanged="MainAddMoneyTextbox_TextChanged" KeyDown="MainTextbox_KeyDown"></TextBox>
 						</WrapPanel>
 						<Button Background="LightBlue" Width="100" Margin="5" Name="MainAddMoneyButton" Click="MainAddMoneyButton_Click">营业额添加</Button>
 					</WrapPanel>
@@ -78,15 +78,15 @@
 					<WrapPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Center">
 						<WrapPanel Orientation="Horizontal" Margin="5">
 							<TextBlock Margin="5">兑换券编号</TextBlock>
-							<TextBox Width="100" Name="MainAddTicketNoTextbox"></TextBox>
+							<TextBox Tag="1" Width="100" Name="MainAddTicketNoTextbox" KeyDown="MainTextbox_KeyDown"></TextBox>
 						</WrapPanel>
 						<WrapPanel Orientation="Horizontal" Margin="5">
 							<TextBlock Margin="5">领券数量</TextBlock>
-							<TextBox Width="100" Name="MainReceiveTicketTextbox"></TextBox>
+							<TextBox Tag="2" Width="100" Name="MainReceiveTicketTextbox" TextChanged="MainAddPhoneNumberTextbox_TextChanged" KeyDown="MainTextbox_KeyDown"></TextBox>
 						</WrapPanel>
 						<WrapPanel Orientation="Horizontal" Margin="5">
 							<TextBlock Margin="5">手机号</TextBlock>
-							<TextBox Width="100" Name="MainAddPhoneNumberTextbox" TextChanged="MainAddPhoneNumberTextbox_TextChanged"></TextBox>
+							<TextBox Tag="3" Width="100" Name="MainAddPhoneNumberTextbox" TextChanged="MainAddPhoneNumberTextbox_TextChanged"  KeyDown="MainTextbox_KeyDown"></TextBox>
 						</WrapPanel>
 						<Button Width="100" Margin="5" Name="MainAddTicketButton" Click="MainAddTicketButton_Click">兑换券添加</Button>
 					</WrapPanel>
@@ -128,12 +128,12 @@
 					<WrapPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
 						<WrapPanel Orientation="Horizontal" Margin="5">
 							<TextBlock Margin="5" Foreground="Red">营业额</TextBlock>
-							<TextBox Width="100" Name="ManageAddMoneyTextbox" TextChanged="MainAddMoneyTextbox_TextChanged"></TextBox>
+							<TextBox Tag="4" Width="100" Name="ManageAddMoneyTextbox" TextChanged="MainAddMoneyTextbox_TextChanged" KeyDown="ManageTextbox_KeyDown"></TextBox>
 						</WrapPanel>
 						<Button Background="LightBlue" Width="100" Margin="5" Name="ManageAddMoneyButton" Click="ManageMoneyButton_Click" Tag="true">营业额添加</Button>
 						<WrapPanel Orientation="Horizontal" Margin="5">
 							<TextBlock Margin="5" Foreground="Red">营业额</TextBlock>
-							<TextBox Width="100" Name="ManageDeleteMoneyTextbox" TextChanged="MainAddMoneyTextbox_TextChanged"></TextBox>
+							<TextBox Tag="5" Width="100" Name="ManageDeleteMoneyTextbox" TextChanged="MainAddMoneyTextbox_TextChanged" KeyDown="ManageTextbox_KeyDown"></TextBox>
 						</WrapPanel>
 						<Button Background="Red" Width="100" Margin="5" Name="ManageDeleteMoneyButton" Click="ManageMoneyButton_Click" Tag="false">营业额删除</Button>
 					</WrapPanel>
@@ -141,15 +141,15 @@
 					<WrapPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
 						<WrapPanel Orientation="Horizontal" Margin="5">
 							<TextBlock Margin="5">兑换券开始编号</TextBlock>
-							<TextBox Width="100" Name="ManageAddTicketNoTextbox"></TextBox>
+							<TextBox Tag="6" Width="100" Name="ManageAddTicketNoTextbox" KeyDown="ManageTextbox_KeyDown"></TextBox>
 						</WrapPanel>
 						<WrapPanel Orientation="Horizontal" Margin="5">
 							<TextBlock Margin="5">领券数量</TextBlock>
-							<TextBox Width="100" Name="ManageReceiveTicketTextbox"></TextBox>
+							<TextBox Tag="7" Width="100" Name="ManageReceiveTicketTextbox" TextChanged="MainAddPhoneNumberTextbox_TextChanged" KeyDown="ManageTextbox_KeyDown"></TextBox>
 						</WrapPanel>
 						<WrapPanel Orientation="Horizontal" Margin="5">
 							<TextBlock Margin="5">手机号</TextBlock>
-							<TextBox Width="100" Name="ManageAddPhoneNumberTextbox" TextChanged="MainAddPhoneNumberTextbox_TextChanged"></TextBox>
+							<TextBox Tag="8" Width="100" Name="ManageAddPhoneNumberTextbox" TextChanged="MainAddPhoneNumberTextbox_TextChanged" KeyDown="ManageTextbox_KeyDown"></TextBox>
 						</WrapPanel>
 						<Button Width="100" Margin="5" Name="ManageAddTicketButton" Click="ManageAddTicketButton_Click">兑换券添加</Button>
 					</WrapPanel>
