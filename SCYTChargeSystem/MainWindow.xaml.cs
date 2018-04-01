@@ -748,7 +748,11 @@ namespace SCYTChargeSystem
 			}
 		}
 
-
+		/// <summary>
+		/// 管理页enter
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void ManageTextbox_KeyDown(object sender,KeyEventArgs e)
 		{
 			TextBox textbox = sender as TextBox;
@@ -802,6 +806,14 @@ namespace SCYTChargeSystem
 				}
 				else
 				{
+					foreach(DataRow dr in drs)
+					{
+						if(dr["State"].ToString() == "已领取")
+						{
+							MessageBox.Show("已领取的券不允许状态更改");
+							return;
+						}
+					}
 					DbHelper db = new DbHelper();
 					DbCommand selecthistory = db.GetSqlStringCommond("select * from TicketNum");
 					int historynum = (int)db.ExecuteScalar(selecthistory);
@@ -862,6 +874,14 @@ namespace SCYTChargeSystem
 				}
 				else
 				{
+					foreach(DataRow dr in drs)
+					{
+						if(dr["State"].ToString() == "已领取")
+						{
+							MessageBox.Show("已领取的券不允许状态更改");
+							return;
+						}
+					}
 					if(MessageBox.Show("是否确认过号这些券?","提醒",MessageBoxButton.YesNo,MessageBoxImage.Warning) == MessageBoxResult.Yes)
 					{
 						using(Trans t = new Trans())
@@ -910,6 +930,14 @@ namespace SCYTChargeSystem
 				}
 				else
 				{
+					foreach(DataRow dr in drs)
+					{
+						if(dr["State"].ToString() == "已领取")
+						{
+							MessageBox.Show("已领取的券不允许状态更改");
+							return;
+						}
+					}
 					if(MessageBox.Show("是否确认重新排队这些券?","提醒",MessageBoxButton.YesNo,MessageBoxImage.Warning) == MessageBoxResult.Yes)
 					{
 						using(Trans t = new Trans())
@@ -960,6 +988,11 @@ namespace SCYTChargeSystem
 				{
 					foreach(DataRow dr in drs)
 					{
+						if(dr["State"].ToString() == "已领取")
+						{
+							MessageBox.Show("已领取的券不允许状态更改");
+							return;
+						}
 						TimeSpan ts = DateTime.Now - Convert.ToDateTime(DateTime.Today.ToShortDateString() + " 06:00:00");
 						//今天
 						if(ts.TotalHours > 0)

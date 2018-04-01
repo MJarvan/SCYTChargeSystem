@@ -172,7 +172,7 @@
 							<Button Width="80" Margin="5" Name="ManageConfirmTicketButton" Click="ManageConfirmTicketButton_Click">领取</Button>
 							<Button Width="80" Margin="5" Name="ManageOverTicketButton" Click="ManageOverTicketButton_Click">过号</Button>
 							<Button Width="80" Margin="5" Name="ManageRequeueTicketButton" Click="ManageRequeueTicketButton_Click">重新排队</Button>
-							<Button Width="80" Margin="5" Name="ManageDeleteTicketButton" Click="ManageDeleteTicketButton_Click">作废</Button>
+							<Button Width="80" Margin="5" Name="ManageDeleteTicketButton" Click="ManageDeleteTicketButton_Click">删除</Button>
 						</WrapPanel>
 					</WrapPanel>
 					<DataGrid Margin="10,0,0,0" Grid.Row="4" Name="ManageTicketDatagrid" Width="Auto" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="True" SelectionUnit="FullRow" ScrollViewer.VerticalScrollBarVisibility="Visible">
