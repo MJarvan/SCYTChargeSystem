@@ -35,14 +35,14 @@
 								<TextBlock Margin="10" FontSize="15" VerticalAlignment="Bottom" HorizontalAlignment="Center">今天营业额</TextBlock>
 							</Grid>
 						</Border>
-						<!--今天发券数-->
+						<!--今天激活数-->
 						<Border Grid.Column="1" Margin="5" BorderThickness="3" BorderBrush="Black" CornerRadius="10">
 							<Grid>
 								<WrapPanel Margin="20" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
 									<TextBlock FontSize="30" Name="TotalSendNumTextblock" HorizontalAlignment="Left"></TextBlock>
 									<TextBlock Margin="10,10,0,0" FontSize="20" HorizontalAlignment="Right">张</TextBlock>
 								</WrapPanel>
-								<TextBlock Margin="10" FontSize="15" VerticalAlignment="Bottom" HorizontalAlignment="Center">今天发券数</TextBlock>
+								<TextBlock Margin="10" FontSize="15" VerticalAlignment="Bottom" HorizontalAlignment="Center">今天激活卷数</TextBlock>
 							</Grid>
 						</Border>
 						<!--今天剩余可兑换数-->

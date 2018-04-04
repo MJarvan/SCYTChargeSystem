@@ -432,7 +432,7 @@ namespace SCYTChargeSystem
 		{
 			string NewTicketNo = string.Empty;
 			string tickettop = OldTicketNo.Remove(OldTicketNo.Length - 4,4);
-			int no = Convert.ToInt32(OldTicketNo.Remove(0,4));
+			int no = Convert.ToInt32(OldTicketNo.Remove(0,OldTicketNo.Length - 4));
 			string four = string.Empty, three = string.Empty, two = string.Empty, one = string.Empty;
 
 			if(no == 0)
@@ -535,30 +535,37 @@ namespace SCYTChargeSystem
 				int historynum = (int)db.ExecuteScalar(selecthistory);
 				if(historynum > 0)
 				{
-					if(MessageBox.Show("是否确认兑换这些券?","提醒",MessageBoxButton.YesNo,MessageBoxImage.Warning) == MessageBoxResult.Yes)
+					if(drs.Length <= historynum)
 					{
-						using(Trans t = new Trans())
+						if(MessageBox.Show("是否确认兑换这些券?","提醒",MessageBoxButton.YesNo,MessageBoxImage.Warning) == MessageBoxResult.Yes)
 						{
-							try
+							using(Trans t = new Trans())
 							{
-								foreach(DataRow dr in drs)
+								try
 								{
-									string state = "2";
-									int UID = Convert.ToInt32(dr["UID"].ToString());
-									DoBussiness.MainTicketStateChange(t,state,UID);
-									DoBussiness.UpdateExchangeNum(t);
-									DoBussiness.UpdateTicketNum(t,historynum - 1);
+									foreach(DataRow dr in drs)
+									{
+										string state = "2";
+										int UID = Convert.ToInt32(dr["UID"].ToString());
+										DoBussiness.MainTicketStateChange(t,state,UID);
+										DoBussiness.UpdateExchangeNum(t);
+										DoBussiness.UpdateTicketNum(t,historynum - 1);
+									}
+									t.Commit();
+									MessageBox.Show("领取成功");
+									LoadMain();
 								}
-								t.Commit();
-								MessageBox.Show("领取成功");
-								LoadMain();
-							}
-							catch(Exception ex)
-							{
-								MessageBox.Show(ex.Message + " ,领取失败,请联系管理员");
-								t.RollBack();
+								catch(Exception ex)
+								{
+									MessageBox.Show(ex.Message + " ,领取失败,请联系管理员");
+									t.RollBack();
+								}
 							}
 						}
+					}
+					else
+					{
+						MessageBox.Show("已经超过发放兑换券的额度,请重新选择");
 					}
 				}
 				else
@@ -819,30 +826,37 @@ namespace SCYTChargeSystem
 					int historynum = (int)db.ExecuteScalar(selecthistory);
 					if(historynum > 0)
 					{
-						if(MessageBox.Show("是否确认兑换这些券?","提醒",MessageBoxButton.YesNo,MessageBoxImage.Warning) == MessageBoxResult.Yes)
+						if(drs.Length <= historynum)
 						{
-							using(Trans t = new Trans())
+							if(MessageBox.Show("是否确认兑换这些券?","提醒",MessageBoxButton.YesNo,MessageBoxImage.Warning) == MessageBoxResult.Yes)
 							{
-								try
+								using(Trans t = new Trans())
 								{
-									foreach(DataRow dr in drs)
+									try
 									{
-										string state = "2";
-										int UID = Convert.ToInt32(dr["UID"].ToString());
-										DoBussiness.MainTicketStateChange(t,state,UID);
-										DoBussiness.UpdateExchangeNum(t);
-										DoBussiness.UpdateTicketNum(t,historynum - 1);
+										foreach(DataRow dr in drs)
+										{
+											string state = "2";
+											int UID = Convert.ToInt32(dr["UID"].ToString());
+											DoBussiness.MainTicketStateChange(t,state,UID);
+											DoBussiness.UpdateExchangeNum(t);
+											DoBussiness.UpdateTicketNum(t,historynum - 1);
+										}
+										t.Commit();
+										MessageBox.Show("领取成功");
+										LoadMain();
 									}
-									t.Commit();
-									MessageBox.Show("领取成功");
-									LoadMain();
-								}
-								catch(Exception ex)
-								{
-									MessageBox.Show(ex.Message + " ,领取失败,请联系管理员");
-									t.RollBack();
+									catch(Exception ex)
+									{
+										MessageBox.Show(ex.Message + " ,领取失败,请联系管理员");
+										t.RollBack();
+									}
 								}
 							}
+						}
+						else
+						{
+							MessageBox.Show("已经超过发放兑换券的额度,请重新选择");
 						}
 					}
 					else
